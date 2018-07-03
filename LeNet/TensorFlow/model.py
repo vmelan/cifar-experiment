@@ -1,58 +1,6 @@
 import tensorflow as tf 
 
-# class LeNet(object):
-# 	"""
-# 	LeNet model
-# 	"""
-
-# 	def __init__(self):
-# 		""" Initialize parameters of the class """
-	
-# 		self.input_height, self.input_width = 32, 32, 3
-# 		self.filter_height, self.filter_width = 3, 3
-# 		self.num_classes = 10
-# 		self.depth_in = 3
-# 		self.depth_out_1 = 6
-# 		self.depth_out_2 = 16
-# 		self.depth_out_3 = 120
-
-# 		self.define_params()
-
-# 	def define_params(self):
-# 		""" Define the weights and the bias """
-
-# 		self.weights = { 
-# 		'wc1': tf.Variable(tf.truncated_normal([filter_height, filter_width, depth_in, depth_out_1])), \
-# 		'wc2': tf.Variable(tf.truncated_normal([filter_height, filter_width, depth_out_1, depth_out_2])), \
-# 		}
-
-# 		self.bias = {
-# 		'bc1': tf.Variable(tf.constant(0, shape=[depth_out_1])), \
-# 		'bc2': tf.Variable(tf.constant(0, shape=[depth_out_2])), \
-# 		'bc3': tf.Variable(tf.constant(0, shape=[depth_out_3])), \
-
-# 		}
-
-def forward(self, x):
-	""" Forward pass of LeNet given an input image x """
-
-	# Convolutional layer 1
-	self.conv_1 = self.conv2d(x, self.weights["wc1"], self.bias["bc1"], name="conv_1")
-	self.maxpool_1 = self.maxpool2d(self.conv_1, strides=2, name="maxpool_1")
-	# Convolutional layer 2
-	self.conv_2 = self.conv2d(self.maxpool_1, self.weights["wc2"], self.bias["bc2"], name="conv_2")
-	self.maxpool_2 
-
-
-# def conv2d(x, W, b, strides=1, name="conv"):
-# 	""" Convolution layer """
-# 	with tf.name_scope(name):
-# 		x = tf.nn.conv2d(x, W, strides=[1, strides, strides, 1], padding='SAME')
-# 		x = tf.nn.bias_add(x, b)
-
-# 		return tf.tanh(x)
-
-def conv2d(input, num_input_channels, num_filters, filter_shape, strides=[1, 1], name="conv"):
+def conv2d(input, num_input_channels, num_filters, filter_shape=[5, 5], strides=[1, 1], name="conv"):
 	""" Convolution layer """
 	with tf.name_scope(name):
 		w = tf.Variable(tf.truncated_normal([filter_shape[0], filter_shape[1], num_input_channels, num_filters], \
@@ -66,23 +14,14 @@ def conv2d(input, num_input_channels, num_filters, filter_shape, strides=[1, 1],
 
 		return output
 
-def avgpool2d(x, strides=[2, 2], name="avgpool"):
+def avgpool2d(input, filter_shape=[2, 2], strides=[2, 2], name="avgpool"):
 	""" Average Pooling layer """
 	with tf.name_scope(name):
-		return tf.nn.pool(x, pooling_type='AVG', \
-			window_shape=[1, strides[0], strides[1], 1], \
+		return tf.nn.pool(input, pooling_type='AVG', \
+			window_shape=[1, filter_shape[0], filter_shape[1], 1], \
 			strides=[1, strides[0], strides[1], 1], padding='VALID', \
 			name=name)
 
-# def fully_connected(x, W, b, act=True, name="fc"):
-# 	""" Fully connected layer """
-# 	with tf.name_scope(name):
-# 		x = tf.add(tf.matmul(x, W), b)
-
-# 		if act: # if True, use tanh activation function, otherwise do not apply any activation
-# 			return tf.tanh(x)
-# 		else:
-# 			return x 
 
 def fully_connected(input, neurons_in, neurons_out, act=True, name="fc"):
 	""" Fully connected layer """
@@ -96,6 +35,36 @@ def fully_connected(input, neurons_in, neurons_out, act=True, name="fc"):
 			return tf.tanh(output)
 		else:
 			return output
+
+def LeNet(input_image):
+
+	# 1st conv layer : CONV + TANH + AVERAGE POOL 
+	conv_1 = conv2d(input_image, num_input_channels=3, num_filters=6, \
+		filter_shape=[5, 5], strides=[1, 1], name="conv1")
+	avgpool_1 = avgpool2d(conv_1, filter_shape=[2, 2], \
+		strides=[2, 2], name="avgpool1")
+
+	# 2nd conv layer : CONV + TANH + AVERAGE POOL
+	conv_2 = conv2d(avgpool_1, num_input_channels=6, num_filters=16, \
+		filter_shape=[5, 5], strides=[1, 1], name="conv_2")
+	avgpool_2 = avgpool2d(conv_2, filter_shape=[2, 2], \
+		strides=[2, 2], name="avgpool2")
+
+	# 3rd conv layer : CONV + TANH
+	conv_3 = conv2d(avgpool_2, num_input_channels=16, num_filters=120, \
+		filter_shape=[5, 5], strides=[1, 1], name="conv3")
+
+	# Flatten 
+	flattened = tf.reshape(conv_3, [-1, 1 * 1 * 120])
+
+	# Fully connected layer 1 : DENSE + TANH
+	fc_1 = fully_connected(flattened, 120, 84, act=True, name="fc1")
+
+	# Output, Fully connected layer 2 : DENSE + RBF
+	fc_2 = fully_connected(fc_1, 84, 10, act=False, name="fc2")
+	output = tf.exp(-tf.pow(fc_2, 2)) 
+
+	return output 
 
 # def compute_loss(logits, targets):
 # 	""" Compute cross entropy as our loss function """
