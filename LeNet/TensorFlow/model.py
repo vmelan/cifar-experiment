@@ -36,6 +36,12 @@ def fully_connected(input, neurons_in, neurons_out, act=True, name="fc"):
 		else:
 			return output
 
+def rbf(input, name="rbf"):
+	""" RBF function """
+	with tf.name_scope(name):
+		output = tf.exp(-tf.pow(input), 2)
+		return output
+
 def LeNet(input_image):
 
 	# 1st conv layer : CONV + TANH + AVERAGE POOL 
@@ -62,7 +68,7 @@ def LeNet(input_image):
 
 	# Output, Fully connected layer 2 : DENSE + RBF
 	fc_2 = fully_connected(fc_1, 84, 10, act=False, name="fc2")
-	output = tf.exp(-tf.pow(fc_2, 2)) 
+	output = rbf(fc_2, name="rbf") 
 
 	return output 
 
