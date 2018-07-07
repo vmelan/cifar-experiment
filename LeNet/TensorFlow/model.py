@@ -62,6 +62,11 @@ class LeNet():
 			output = tf.nn.bias_add(output, b)
 			output = tf.tanh(output)
 
+			# Histogram summaries for Tensorboard
+			tf.summary.histogram("weights", w)
+			tf.summary.histogram("biases", b)
+			tf.summary.histogram("activations", output)
+
 			return output
 
 	def avgpool2d(self, input, filter_shape=[2, 2], strides=[2, 2], name="avgpool"):
@@ -77,6 +82,10 @@ class LeNet():
 		with tf.name_scope(name):
 			W = tf.Variable(tf.truncated_normal([neurons_in, neurons_out], stddev=0.02), name=name+"_W")
 			b = tf.Variable(tf.constant(0.1, shape=[neurons_out]), name=name+"_b")
+
+			# Histogram summaries for Tensorboard
+			tf.summary.histogram("weights", W)
+			tf.summary.histogram("biases", b)
 
 			output = tf.add(tf.matmul(input, W), b)
 

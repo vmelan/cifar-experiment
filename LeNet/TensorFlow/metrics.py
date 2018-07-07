@@ -1,14 +1,5 @@
 import tensorflow as tf
 
-
-# def compute_metrics(logits, targets):
-# 	""" Regroup all computed metrics """
-# 	with tf.name_scope("metric"):
-# 		cross_entropy_mean = compute_loss_xent(logits, targets)
-# 		accuracy = compute_accuracy(logits, targets)
-
-# 		return cross_entropy_mean, accuracy 
-
 def compute_loss_xent(logits, targets):
 	""" Compute cross entropy as our loss function """
 	with tf.name_scope("cross_entropy"):
@@ -20,6 +11,9 @@ def compute_loss_xent(logits, targets):
 		# Take the average loss across batch size
 		cross_entropy_mean = tf.reduce_mean(cross_entropy, name="cross_entropy")
 
+		# Display scalar on Tensorboard
+		tf.summary.scalar("cross_entropy", xent)
+
 		return cross_entropy_mean
 
 def compute_accuracy(logits, targets):
@@ -27,5 +21,8 @@ def compute_accuracy(logits, targets):
 	with tf.name_scope("accuracy"):
 		correct_prediction = tf.equal(tf.argmax(logits, 1), tf.argmax(targets, 1)) # or tf.nn.in_top_k(logits, targets, 1)
 		accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
+
+		# Display scalar on Tensorboard
+		tf.summary.scalar("accuracy", accuracy)
 
 		return accuracy
