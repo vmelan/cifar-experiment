@@ -2,8 +2,13 @@ import tensorflow as tf
 
 
 class LeNet():
-	def __init__(self):
-		pass
+	def __init__(self, config):
+		# Load config file
+		self.config = config 
+		# Create saver
+		# self.init_saver()
+		# Retrieve placeholders
+		# self.X, self.y = self.create_placeholder()
 
 	def forward(self, input_image, name="LeNet"):
 
@@ -11,7 +16,6 @@ class LeNet():
 			# 1st conv layer : CONV + TANH + AVERAGE POOL 
 			conv_1 = self.conv2d(input_image, num_input_channels=1, num_filters=6, \
 				filter_shape=[5, 5], strides=[1, 1], name="conv1")
-			print("conv_1.shape", conv_1.shape)
 			avgpool_1 = self.avgpool2d(conv_1, filter_shape=[2, 2], \
 				strides=[2, 2], name="avgpool1")
 
@@ -39,7 +43,7 @@ class LeNet():
 
 			return output 
 
-	def train_optimizer(self.loss_value, learning_rate=0.001, beta1=0.9, beta2=0.999, epsilon=1e-08):
+	def train_optimizer(self, loss_value, learning_rate=0.001, beta1=0.9, beta2=0.999, epsilon=1e-08):
 		""" Use an AdamOptimizer to train the network """
 		with tf.name_scope("optimizer"):
 			# Create optimizer
@@ -49,6 +53,20 @@ class LeNet():
 			train_step = my_optimizer.minimize(loss_value)
 
 			return train_step
+
+
+	# def create_saver(self):
+	# 	""" Tensorflow saver that will be used to save and load the model"""
+	# 	self.saver = tf.train.Saver(max_to_keep=self.config["max_to_keep"])
+	# 	return self.saver
+
+	# def create_placeholder(self):
+	# 	""" Create the placeholders """ 
+	# 	X = tf.placeholder(tf.float32, [None, 32, 32, 1])
+	# 	y = tf.placeholder(tf.float32, [None, 10])
+
+	# 	return X, y
+
 
 	def conv2d(self, input, num_input_channels, num_filters, filter_shape=[5, 5], strides=[1, 1], name="conv"):
 		""" Convolution layer """
@@ -69,6 +87,7 @@ class LeNet():
 
 			return output
 
+
 	def avgpool2d(self, input, filter_shape=[2, 2], strides=[2, 2], name="avgpool"):
 		""" Average Pooling layer """
 		with tf.name_scope(name):
@@ -76,6 +95,7 @@ class LeNet():
 				window_shape=[filter_shape[0], filter_shape[1]], \
 				strides=[strides[0], strides[1]], padding='VALID', \
 				name=name)
+
 
 	def fully_connected(self, input, neurons_in, neurons_out, act=True, name="fc"):
 		""" Fully connected layer """

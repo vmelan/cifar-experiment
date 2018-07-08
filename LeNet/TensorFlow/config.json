@@ -1,0 +1,12 @@
+{
+	"experiment_name": "LeNet_exp",
+	"data_path": "../../cifar-10-batches-py/",
+	"num_epochs": 20,
+	"batch_size": 128, 
+	"num_iter_per_epoch": 74,
+	"learning_rate": 0.001,
+	"max_to_keep": 1, 
+	"display_step": 1,
+	"writer_step": 1, 
+	"save_step": 1 
+}

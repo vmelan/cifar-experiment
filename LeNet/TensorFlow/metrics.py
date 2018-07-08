@@ -12,7 +12,7 @@ def compute_loss_xent(logits, targets):
 		cross_entropy_mean = tf.reduce_mean(cross_entropy, name="cross_entropy")
 
 		# Display scalar on Tensorboard
-		tf.summary.scalar("cross_entropy", xent)
+		tf.summary.scalar("cross_entropy", cross_entropy_mean)
 
 		return cross_entropy_mean
 
