@@ -14,19 +14,11 @@ def main():
 
 	data = DataLoader(config)
 
-	# Some tests
-	# print(data.X_train.shape, data.y_train.shape)
-	# print(data.X_valid.shape, data.y_valid.shape)
-	# print(data.X_test.shape, data.y_test.shape)
-
-	# batch_x, batch_y = next(data.next_batch(config["batch_size"]))
-	# print(batch_x.shape, batch_y.shape)
-
 	# Create placeholders 
 	X = tf.placeholder(tf.float32, [None, 32, 32, 1])
 	y = tf.placeholder(tf.float32, [None, 10])
 
-	# Create model and create logits
+	# Create model and logits
 	LeNet = model.LeNet(config)
 	logits = LeNet.forward(X)
 
@@ -44,7 +36,7 @@ def main():
 	# Create saver to save and restore model
 	saver = tf.train.Saver(max_to_keep=config["max_to_keep"])
 
-	## Launching the execution graph
+	## Launching the execution graph for training
 	with tf.Session() as sess:
 		# Initializing all variables
 		sess.run(tf.global_variables_initializer())
@@ -82,6 +74,23 @@ def main():
 					)
 
 		print("Training complete")
+
+
+	## Evaluate on test data by loading the saver
+	with tf.Session() as sess:
+		# Load the network from meta file created by saver
+		new_saver = tf.train.import_meta_graph(
+				"./saver/" + config["experiment_name"] + "/model_epoch-" + str(config["num_epochs"]) + ".meta")
+		# Restore the parameters
+		new_saver.restore(sess, tf.train.latest_checkpoint("./saver/" + config["experiment_name"] + "/"))
+
+		loss_test, acc_test = sess.run([cost, accuracy], feed_dict={X: data.X_test, y: data.y_test})
+
+		print("test loss=", "%.5f," % (loss_test), 
+			"test accuracy=", "%.5f" % (acc_test))
+
+		print("Testing complete")
+
 
 
 if __name__ == '__main__':
