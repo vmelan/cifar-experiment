@@ -6,6 +6,7 @@ from keras.layers import Input, Dense, Flatten
 from keras.layers import Conv2D, Activation, AveragePooling2D
 from keras.models import Model
 from keras.initializers import glorot_uniform
+from keras.models import model_from_json
 import keras.backend as K
 
 class LeNet(object):
@@ -55,42 +56,49 @@ class LeNet(object):
 		X = Activation(gaussian, name="rbf")(X)
 
 		# Create model
-		model = Model(inputs=X_input, outputs=X, name="LeNet")
+		self.model = Model(inputs=X_input, outputs=X, name="LeNet")
 
-		return model 
+		return self.model 
+
+		def save_model(self):
+			""" Save network model """
+
+			if self.model is None:
+				raise Exception("You have to build the model first")
+
+			# Serialize model to JSON
+			model_json = self.model.to_json()
+			with open("saved/model.json", "w") as json_file:
+				json_file.write(model_json)
+
+			print("Model network saved")
+
+		def save_weights(self):
+			""" Save network weights """
+			if self.model is None:
+				raise Exception("You have to build the model first")
+			# Serialize weights to hdf5
+			self.model.save_weights("saved/model.hdf5")
+
+			print("Model weights saved")
+
+		def load_model(self):
+			""" Load model architecture """
+			
+			with open("saved/model.json", "r") as json_file:
+				loaded_model_json = json_file.read()
+
+			loaded_model = model_from_json(loaded_model_json)
+
+			return loaded_model 
 
 
+		def load_weights(self, checkpoint_path):
+			""" Load model weights """
+			if self.model is None:
+				raise Exception("You have to build the model first")		
 
-# class LeNet:
-# 	@staticmethod
-# 	def build(width, height, depth, classes):
-# 		# initialize the model
-# 		model = Sequential()
-# 		inputShape = (height, width, depth)
+			print("Loading model checkpoint %s ... \n" % (checkpoint_path))
+			self.model.load_weights(checkpoint_path)
+			print("Model weights loaded")
 
-# 		# if we are using "channels first", update the input shape
-# 		if K.image_data_format() == "channels_first":
-# 			inputShape = (depth, height, width)
-
-# 		# first set of CONV => RELU => POOL layers
-# 		model.add(Conv2D(20, (5, 5), padding="same",
-# 			input_shape=inputShape))
-# 		model.add(Activation("relu"))
-# 		model.add(MaxPooling2D(pool_size=(2, 2), strides=(2, 2)))
-
-# 		# second set of CONV => RELU => POOL layers
-# 		model.add(Conv2D(50, (5, 5), padding="same"))
-# 		model.add(Activation("relu"))
-# 		model.add(MaxPooling2D(pool_size=(2, 2), strides=(2, 2)))
-
-# 		# first (and only) set of FC => RELU layers
-# 		model.add(Flatten())
-# 		model.add(Dense(500))
-# 		model.add(Activation("relu"))
-
-# 		# softmax classifier
-# 		model.add(Dense(classes))
-# 		model.add(Activation("softmax"))
-
-# 		# return the constructed network architecture
-# 		return model
