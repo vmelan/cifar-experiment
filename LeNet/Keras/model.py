@@ -9,13 +9,16 @@ from keras.initializers import glorot_uniform
 from keras.models import model_from_json
 import keras.backend as K
 
+# def gaussian(x):
+# 	return K.exp(-K.pow(x, 2))
+
 class LeNet(object):
 	""" Create LeNet class """
 	def __init__(self, config):
 		self.config = config
 		self.model = None
 
-	def build_model(self, input_shape=(32, 32, 3)):
+	def build_model(self, input_shape=(32, 32, 1)):
 		""" Create model architecture """
 
 		# Define the input as a tensor with shape input_shape 
@@ -32,14 +35,14 @@ class LeNet(object):
 		X = Conv2D(filters=6, kernel_size=(5, 5), strides=(1, 1), \
 			kernel_initializer=glorot_uniform(seed=0), \
 			padding="valid", \
-			name="Conv_2")(X_input)		
+			name="Conv_2")(X)		
 		X = Activation("tanh", name="Tanh_2")(X)
 		X = AveragePooling2D(pool_size=(2, 2), name="AvgPool_2")(X)
 		# 3rd conv layer : CONV + TANH
 		X = Conv2D(filters=120, kernel_size=(5, 5), strides=(1, 1), \
 			kernel_initializer=glorot_uniform(seed=0), \
 			padding="valid", \
-			name="Conv_3")(X_input)
+			name="Conv_3")(X)
 		X = Activation("tanh", name="Tanh_3")(X)		
 		# Flatten
 		X = Flatten(name="Flatten")(X)
@@ -50,55 +53,54 @@ class LeNet(object):
 		# Output with Gaussian connections
 		X = Dense(10, name="FC_2")(X)
 
-		def gaussian(x):
-			return K.exp(-K.pow(x, 2))
+		X = Activation("softmax", name="softmax")(X)
 
-		X = Activation(gaussian, name="rbf")(X)
+		# X = Activation(gaussian, name="rbf")(X)
 
 		# Create model
 		self.model = Model(inputs=X_input, outputs=X, name="LeNet")
 
 		return self.model 
 
-		def save_model(self):
-			""" Save network model """
+		# def save_model(self):
+		# 	""" Save network model """
 
-			if self.model is None:
-				raise Exception("You have to build the model first")
+		# 	if self.model is None:
+		# 		raise Exception("You have to build the model first")
 
-			# Serialize model to JSON
-			model_json = self.model.to_json()
-			with open("saved/model.json", "w") as json_file:
-				json_file.write(model_json)
+		# 	# Serialize model to JSON
+		# 	model_json = self.model.to_json()
+		# 	with open("./saved/model.json", "w") as json_file:
+		# 		json_file.write(model_json)
 
-			print("Model network saved")
+		# 	print("Model network saved")
 
-		def save_weights(self):
-			""" Save network weights """
-			if self.model is None:
-				raise Exception("You have to build the model first")
-			# Serialize weights to hdf5
-			self.model.save_weights("saved/model.hdf5")
+		# def save_weights(self):
+		# 	""" Save network weights """
+		# 	if self.model is None:
+		# 		raise Exception("You have to build the model first")
+		# 	# Serialize weights to hdf5
+		# 	self.model.save_weights("saved/model.hdf5")
 
-			print("Model weights saved")
+		# 	print("Model weights saved")
 
-		def load_model(self):
-			""" Load model architecture """
+		# def load_model(self):
+		# 	""" Load model architecture """
 			
-			with open("saved/model.json", "r") as json_file:
-				loaded_model_json = json_file.read()
+		# 	with open("./saved/model.json", "r") as json_file:
+		# 		loaded_model_json = json_file.read()
 
-			loaded_model = model_from_json(loaded_model_json)
+		# 	loaded_model = model_from_json(loaded_model_json)
 
-			return loaded_model 
+		# 	return loaded_model 
 
 
-		def load_weights(self, checkpoint_path):
-			""" Load model weights """
-			if self.model is None:
-				raise Exception("You have to build the model first")		
+		# def load_weights(self, checkpoint_path):
+		# 	""" Load model weights """
+		# 	if self.model is None:
+		# 		raise Exception("You have to build the model first")		
 
-			print("Loading model checkpoint %s ... \n" % (checkpoint_path))
-			self.model.load_weights(checkpoint_path)
-			print("Model weights loaded")
+		# 	print("Loading model checkpoint %s ... \n" % (checkpoint_path))
+		# 	self.model.load_weights(checkpoint_path)
+		# 	print("Model weights loaded")
 
