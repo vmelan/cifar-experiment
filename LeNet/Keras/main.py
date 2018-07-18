@@ -20,10 +20,10 @@ def main():
 	LeNet = model.LeNet(config)
 
 	# Building LeNet model
-	LeNet_model = LeNet.build_model()
+	LeNet.build_model()
 
 	# Compile Model 
-	LeNet_model.compile(optimizer=Adam(lr=config["learning_rate"], beta_1=0.9, beta_2=0.999, epsilon=1e-7), 
+	LeNet.compile(optimizer=Adam(lr=config["learning_rate"], beta_1=0.9, beta_2=0.999, epsilon=1e-7), 
 		loss='categorical_crossentropy', 
 		metrics=['accuracy'])
 
@@ -49,7 +49,7 @@ def main():
 	# 	verbose=1
 	# 	)
 
-	LeNet_model.fit_generator(generator=(data.next_batch()),
+	LeNet.fit_generator(generator=(data.next_batch()),
 		validation_data=(data.X_valid, data.y_valid),  
 		epochs=config["num_epochs"],
 		steps_per_epoch=config["num_iter_per_epoch"], 
@@ -59,8 +59,8 @@ def main():
 
 	## Saving model and weights
 	with open("./saved/model.json", "w") as json_file:
-		json_file.write(LeNet_model.to_json())
-	LeNet_model.save_weights("saved/model_weights.hdf5")
+		json_file.write(LeNet.to_json())
+	LeNet.save_weights("saved/model_weights.hdf5")
 	print("LeNet model and weights saved")
 
 	## Load model and weights for validation
@@ -74,9 +74,8 @@ def main():
 		metrics=['accuracy'])
 
 	## Evaluate on test data
-	results = LeNet_model.evaluate(x=data.X_test, y=data.y_test, 
+	results = LeNet.evaluate(x=data.X_test, y=data.y_test, 
 		batch_size=config["batch_size"], verbose=1)
-
 
 	print(results)
 

@@ -62,6 +62,18 @@ class LeNet(object):
 
 		return self.model 
 
+	def compile(self, **kwargs):
+		self.model.compile(**kwargs)
+
+	def fit_generator(self, **kwargs):
+		self.model.fit_generator(**kwargs)
+
+	def evaluate(self, **kwargs):
+		self.model.evaluate(**kwargs)
+
+	def to_json(self, **kwargs):
+		self.model.to_json(**kwargs)
+
 		# def save_model(self):
 		# 	""" Save network model """
 
