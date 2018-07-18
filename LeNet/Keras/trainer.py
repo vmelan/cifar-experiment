@@ -7,10 +7,13 @@ class Trainer(object):
 		self.config = config
 		self.callbacks = []
 
+		self.init_callbacks()
+
 	def init_callbacks(self):
 		"""
 		Create callbacks 
 		"""
+
 		self.callbacks.append(
 			ModelCheckpoint(self.config["model_checkpoint_path"], 
 				monitor="val_acc",
@@ -21,7 +24,7 @@ class Trainer(object):
 			)
 
 		self.callbacks.append(
-			Tensorboard(
+			TensorBoard(
 				log_dir="./logs", 
 				histogram_freq=1, 
 				batch_size=self.config["batch_size"],
@@ -34,6 +37,7 @@ class Trainer(object):
 		"""
 		Train the model
 		"""
+
 		self.model.fit_generator(generator=(self.data.next_batch()),
 			validation_data=(self.data.X_valid, self.data.y_valid),  
 			epochs=self.config["num_epochs"],
@@ -51,9 +55,9 @@ class Trainer(object):
 			x=self.data.X_test, 
 			y=self.data.y_test, 
 			batch_size=self.config["batch_size"], 
-			verbose=1
+			verbose=0
 			)
 
 		print("test loss = ", results[0])
-		print("test accuracy = ", results[1] * 100, "%")
+		print("test accuracy = %.4f %%" % (results[1] * 100))
 

@@ -1,13 +1,10 @@
-import warnings
-warnings.filterwarnings("ignore")
-
-
 from keras.layers import Input, Dense, Flatten
 from keras.layers import Conv2D, Activation, AveragePooling2D
 from keras.models import Model
 from keras.initializers import glorot_uniform
 from keras.models import model_from_json
 import keras.backend as K
+from keras.optimizers import Adam
 
 # def gaussian(x):
 # 	return K.exp(-K.pow(x, 2))
@@ -17,6 +14,7 @@ class LeNet(object):
 	def __init__(self, config):
 		self.config = config
 		self.model = None
+		self.build_model()
 
 	def build_model(self, input_shape=(32, 32, 1)):
 		""" Create model architecture """
@@ -60,39 +58,37 @@ class LeNet(object):
 		# Create model
 		self.model = Model(inputs=X_input, outputs=X, name="LeNet")
 
-		return self.model 
+		# Compile model
+		self.compile()
 
-	def compile(self, **kwargs):
-		self.model.compile(**kwargs)
+	def compile(self):
+		""" 
+		Compile model using Adam optimizer
+		"""
+		self.model.compile(optimizer=
+			Adam(lr=self.config["learning_rate"], beta_1=0.9, beta_2=0.999, epsilon=1e-7), 
+			loss='categorical_crossentropy', 
+			metrics=['accuracy'])		
 
-	def fit_generator(self, **kwargs):
-		self.model.fit_generator(**kwargs)
+	# def save_model(self):
+	# 	""" Save network model """
 
-	def evaluate(self, **kwargs):
-		self.model.evaluate(**kwargs)
+	# 	if self.model is None:
+	# 		raise Exception("You have to build the model first")
 
-	def to_json(self, **kwargs):
-		self.model.to_json(**kwargs)
+	# 	# Serialize model to JSON
+	# 	model_json = self.model.to_json()
+	# 	with open("./saved/model.json", "w") as json_file:
+	# 		json_file.write(model_json)
 
-		# def save_model(self):
-		# 	""" Save network model """
+	# 	print("Model network saved")
 
-		# 	if self.model is None:
-		# 		raise Exception("You have to build the model first")
-
-		# 	# Serialize model to JSON
-		# 	model_json = self.model.to_json()
-		# 	with open("./saved/model.json", "w") as json_file:
-		# 		json_file.write(model_json)
-
-		# 	print("Model network saved")
-
-		# def save_weights(self):
-		# 	""" Save network weights """
-		# 	if self.model is None:
-		# 		raise Exception("You have to build the model first")
-		# 	# Serialize weights to hdf5
-		# 	self.model.save_weights("saved/model.hdf5")
+	def save_weights(self):
+		""" Save network weights """
+		if self.model is None:
+			raise Exception("You have to build the model first")
+		# Serialize weights to hdf5
+		self.model.save_weights("saved/model.hdf5")
 
 		# 	print("Model weights saved")
 
@@ -107,12 +103,12 @@ class LeNet(object):
 		# 	return loaded_model 
 
 
-		# def load_weights(self, checkpoint_path):
-		# 	""" Load model weights """
-		# 	if self.model is None:
-		# 		raise Exception("You have to build the model first")		
+	def load_weights(self, checkpoint_path):
+		""" Load model weights """
+		if self.model is None:
+			raise Exception("You have to build the model first")		
 
-		# 	print("Loading model checkpoint %s ... \n" % (checkpoint_path))
-		# 	self.model.load_weights(checkpoint_path)
-		# 	print("Model weights loaded")
+		print("Loading model checkpoint %s ... \n" % (checkpoint_path))
+		self.model.load_weights(checkpoint_path)
+		print("Model weights loaded")
 

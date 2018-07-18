@@ -83,9 +83,10 @@ class DataLoader():
 		""" Split train_data into train/validation set """
 		return train_test_split(train_data, train_labels, test_size=0.1, random_state=42)
 
-	def next_batch(self, batch_size):
+	def next_batch(self):
 		""" Yield batches for training """
-		idx = np.random.choice(self.X_train.shape[0], size=batch_size)
-		yield self.X_train[idx], self.y_train[idx]
 
-	# TODO : Create generator to evaluate test data by not loading whole data
+		while True:
+			idx = np.random.choice(self.X_train.shape[0], size=self.config["batch_size"])
+			yield (self.X_train[idx], self.y_train[idx])
+
