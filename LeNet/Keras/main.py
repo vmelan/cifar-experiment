@@ -1,13 +1,7 @@
-import warnings
-warnings.filterwarnings("ignore")
-
 import json
 from data_loader import DataLoader
 import model
 from trainer import Trainer 
-# from model import gaussian
-from keras.models import model_from_json
-
 
 def main():
 	with open("config.json", "r") as f:
