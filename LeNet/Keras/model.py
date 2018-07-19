@@ -90,7 +90,7 @@ class LeNet(object):
 		# Serialize weights to hdf5
 		self.model.save_weights("saved/model.hdf5")
 
-		# 	print("Model weights saved")
+		print("Model weights saved")
 
 		# def load_model(self):
 		# 	""" Load model architecture """

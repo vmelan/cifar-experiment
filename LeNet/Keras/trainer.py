@@ -25,7 +25,7 @@ class Trainer(object):
 
 		self.callbacks.append(
 			TensorBoard(
-				log_dir="./logs", 
+				log_dir="./logs/" + self.config["experiment_name"], 
 				histogram_freq=1, 
 				batch_size=self.config["batch_size"],
 				write_graph=True, 
