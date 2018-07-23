@@ -3,14 +3,11 @@ import numpy as np
 import cv2
 from sklearn.model_selection import train_test_split
 
-import matplotlib.image as mpimg
-
-
 import torch
 from torch.utils import data
 
 
-class CifarDataset(data.Dataset):
+class CifarDataLoader(data.Dataset):
 	def __init__(self, config, data_X, data_y, transform=None):
 		self.config = config
 		self.images, self.labels = data_X, data_y 
@@ -31,55 +28,13 @@ class CifarDataset(data.Dataset):
 
 		return sample
 
-
-class ToTensor(object):
-	""" Convert ndarrays in sample to Tensors. """
-
-	def __call__(self, sample):
-		image, label = sample['image'], sample['label']
-
-		# Swap color axis because numpy image : H x W x C and torch image : C x H x W
-		image = image.transpose((2, 0, 1))
-
-		return {'image': torch.from_numpy(image), 
-				'label': torch.from_numpy(label)}
-
-
-class Normalize(object):
-	""" Normalize the color range of an image to [0, 1] """
-
-	def __call__(self, sample):
-		image, label = sample['image'], sample['label']
-
-		# scale color range from [0, 255] to [0, 1]
-		image = image / 255.0
-
-		return {'image': image, 'label': label}
-
-
-class ToGrayscale(object):
-	""" Conver a color image to grayscale """
-
-	def __call__(self, sample):
-		image, label = sample['image'], sample['label']
-
-		gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-		gray_image = gray_image.reshape(32, 32, 1)
-
-		return {'image': gray_image, 'label': label}
-
-
-class CifarDataLoader(object):
+class CifarDataset(object):
 	""" Load CIFAR dataset """
 	def __init__(self, config):
 		# Load config file
 		self.config = config
 		# Load data from data_path
 		self.X_train, self.y_train, self.X_test, self.y_test = self.load_cifar10(config["data_path"])
-		# Scale inputs 
-		# self.X_train, self.X_test = self.scale_data(self.X_train), self.scale_data(self.X_test)
-		# Convert inputs to grayscale
-		# self.X_train, self.X_test = self.convert_grayscale(self.X_train), self.convert_grayscale(self.X_test)
 		# One-hot encode the labels
 		self.y_train, self.y_test = self.one_hot_labels(self.y_train), self.one_hot_labels(self.y_test)
 		# Split train into train/validation
@@ -117,7 +72,7 @@ class CifarDataLoader(object):
 		test_labels = np.array(test_labels)
 
 		return train_data, train_labels, test_data, test_labels		
-		
+
 
 	def one_hot_labels(self, label_data, num_classes=10):
 		"""
@@ -131,10 +86,5 @@ class CifarDataLoader(object):
 		""" Split train_data into train/validation set """
 		return train_test_split(train_data, train_labels, test_size=0.1, random_state=42)
 
-	def next_batch(self):
-		""" Yield batches for training """
 
-		while True:
-			idx = np.random.choice(self.X_train.shape[0], size=self.config["batch_size"])
-			yield (self.X_train[idx], self.y_train[idx])
 
