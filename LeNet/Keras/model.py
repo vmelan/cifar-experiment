@@ -30,7 +30,7 @@ class LeNet(object):
 		X = Activation("tanh", name="Tanh_1")(X)
 		X = AveragePooling2D(pool_size=(2, 2), name="AvgPool_1")(X)
 		# 2nd conv layer : CONV + TANH + AVERAGE POOL
-		X = Conv2D(filters=6, kernel_size=(5, 5), strides=(1, 1), \
+		X = Conv2D(filters=16, kernel_size=(5, 5), strides=(1, 1), \
 			kernel_initializer=glorot_uniform(seed=0), \
 			padding="valid", \
 			name="Conv_2")(X)		
