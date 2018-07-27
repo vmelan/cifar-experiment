@@ -1,8 +1,8 @@
 import json
-from data_loader import CifarDataLoader, CifarDataset, ToTensor, ToGrayscale, Normalize
-
+from data_loader import CifarDataset, CifarDataLoader
+from transformations import ToTensor, ToGrayscale, Normalize
 import torch
-from torch.utils.data import DataLoader 
+from torch.utils import data
 from torchvision import transforms
 
 def main():
@@ -23,13 +23,23 @@ def main():
 	test_data_transformed = CifarDataLoader(config, data.X_test, data.y_test, 
 		transform=all_transforms)
 
-	# print("data.X_train[9].shape: ", data.X_train[9].shape)
-
+	# Sanity check
 	for i in range(4): 
 		sample = train_data_transformed[i]
 		print(i, sample['image'].size(), sample['label'].size())
 
-	
+	train_loader = data.DataLoader(train_data_transformed, 
+		batch_size=config["batch_size"], 
+		shuffle=False, 
+		num_workers=4)
+	valid_loader = data.DataLoader(valid_data_transformed, 
+		batch_size=config["batch_size"], 
+		shuffle=False, 
+		num_workers=4)
+	test_loader = data.DataLoader(test_data_transformed, 
+		batch_size=config["batch_size"], 
+		shuffle=False, 
+		num_workers=4)
 
 
 if __name__ == '__main__':
