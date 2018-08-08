@@ -26,8 +26,8 @@ def main():
 		transform=all_transforms)
 	valid_data_transformed = CifarDataLoader(config, data.X_valid, data.y_valid, 
 		transform=all_transforms)
-	# test_data_transformed = CifarDataLoader(config, data.X_test, data.y_test, 
-	# 	transform=all_transforms)
+	test_data_transformed = CifarDataLoader(config, data.X_test, data.y_test, 
+		transform=all_transforms)
 
 	train_loader = DataLoader(train_data_transformed, 
 		batch_size=config["batch_size"], 
@@ -37,10 +37,10 @@ def main():
 		batch_size=config["batch_size"], 
 		shuffle=False, 
 		num_workers=4)
-	# test_loader = DataLoader(test_data_transformed, 
-	# 	batch_size=config["batch_size"], 
-	# 	shuffle=False, 
-	# 	num_workers=4)
+	test_loader = DataLoader(test_data_transformed, 
+		batch_size=config["batch_size"], 
+		shuffle=False, 
+		num_workers=4)
 
 	## Define neural network
 	net = LeNet()
@@ -60,7 +60,7 @@ def main():
 		total_loss = 0.0
 		total_accuracy = 0.0
 
-		for batch_idx, sample in tqdm(enumerate(train_loader), ascii=True, desc="epoch [" + str(epoch + 1) + "/" + str(config["num_epochs"]) + "]"):
+		for batch_idx, sample in tqdm(enumerate(train_loader), desc="epoch [" + str(epoch + 1) + "/" + str(config["num_epochs"]) + "]"):
 			images, true_labels = sample['image'].type(torch.FloatTensor), sample['label'].type(torch.FloatTensor)
 			# zero the parameter (weight) gradients
 			optimizer.zero_grad()
@@ -109,9 +109,28 @@ def main():
 			writer.add_scalar('val_loss', val_loss, epoch)
 			writer.add_scalar('val_acc', val_acc, epoch)
 
-
-
 	print("Training complete")
+
+	## Saving model parameters
+	torch.save(net.state_dict(), config["model_checkpoint_path"])
+	print("Model parameters saved !")
+
+	## Loading model and model parameters
+	net = LeNet()
+	net.load_state_dict(torch.load(config["model_checkpoint_path"]))
+
+	## Inference 
+	net.eval()
+	test_loss, test_acc = 0.0, 0.0
+	for batch_idx, sample in tqdm(enumerate(test_loader), desc="Inference"):
+		images, true_labels = sample['image'].type(torch.FloatTensor), sample['label'].type(torch.FloatTensor)
+		pred_labels = net.forward(images)
+		test_loss += criterion(pred_labels, true_labels).item()
+		test_acc += torch.sum(torch.argmax(true_labels, dim=1) == torch.argmax(pred_labels, dim=1))
+	test_loss = test_loss / len(test_loader)
+	test_acc = test_acc.numpy() / len(data.X_test)
+	print("test_loss: %.3f" % (test_loss), "test_acc: %.3f" % (test_acc))
+
 
 if __name__ == '__main__':
 	main()
