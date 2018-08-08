@@ -42,9 +42,9 @@ class LeNet(nn.Module):
 		""" Forward pass of network """
 
 		## Conv layers
-		x = self.pool(F.tanh(self.conv1(x)))
-		x = self.pool(F.tanh(self.conv2(x)))
-		x = self.pool(F.tanh(self.conv3(x)))
+		x = self.avgpool(F.tanh(self.conv1(x)))
+		x = self.avgpool(F.tanh(self.conv2(x)))
+		x = F.tanh(self.conv3(x))
 
 		## Flatten
 		x = x.view(x.size(0), -1)
@@ -54,3 +54,5 @@ class LeNet(nn.Module):
 		x = self.fc2(x)
 
 		x = F.softmax(x, dim=1)
+
+		return x
