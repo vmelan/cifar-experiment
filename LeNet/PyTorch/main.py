@@ -77,6 +77,9 @@ def main():
 			# compute accuracy for print  
 			total_accuracy += torch.sum(torch.argmax(true_labels, dim=1) == torch.argmax(pred_labels, dim=1))
 
+			# Add model Graph
+			if (batch_idx == 0 and epoch == 0): writer.add_graph(net, (images, ))
+
 		if (epoch % config["display_step"] == 0):
 			# evaluation mode
 			net.eval()
@@ -108,6 +111,9 @@ def main():
 			writer.add_scalar('train_acc', train_acc, epoch)
 			writer.add_scalar('val_loss', val_loss, epoch)
 			writer.add_scalar('val_acc', val_acc, epoch)
+
+	# Closing writer
+	writer.close()
 
 	print("Training complete")
 
