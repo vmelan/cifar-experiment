@@ -1,6 +1,8 @@
 import json
+from tqdm import tqdm
 from data_loader import CifarDataset, CifarDataLoader
 from transformations import ToTensor, ToGrayscale, Normalize
+from tensorboardX import SummaryWriter
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -14,7 +16,6 @@ def main():
 		config = json.load(f)
 
 	data = CifarDataset(config)
-	# print("data.X_train.shape: ", data.X_train.shape, "data.y_train.shape", data.y_train.shape)
 
 	all_transforms = transforms.Compose([
 		ToGrayscale(), 
@@ -23,24 +24,19 @@ def main():
 
 	train_data_transformed = CifarDataLoader(config, data.X_train, data.y_train, 
 		transform=all_transforms)
-	# valid_data_transformed = CifarDataLoader(config, data.X_valid, data.y_valid, 
-	# 	transform=all_transforms)
+	valid_data_transformed = CifarDataLoader(config, data.X_valid, data.y_valid, 
+		transform=all_transforms)
 	# test_data_transformed = CifarDataLoader(config, data.X_test, data.y_test, 
 	# 	transform=all_transforms)
-
-	# Sanity check
-	# for i in range(4): 
-	# 	sample = train_data_transformed[i]
-	# 	print(i, sample['image'].size(), sample['label'].size())
 
 	train_loader = DataLoader(train_data_transformed, 
 		batch_size=config["batch_size"], 
 		shuffle=False, 
 		num_workers=4)
-	# valid_loader = DataLoader(valid_data_transformed, 
-	# 	batch_size=config["batch_size"], 
-	# 	shuffle=False, 
-	# 	num_workers=4)
+	valid_loader = DataLoader(valid_data_transformed, 
+		batch_size=config["batch_size"], 
+		shuffle=False, 
+		num_workers=4)
 	# test_loader = DataLoader(test_data_transformed, 
 	# 	batch_size=config["batch_size"], 
 	# 	shuffle=False, 
@@ -52,16 +48,19 @@ def main():
 	## Define the loss and optimization
 	criterion = nn.MSELoss()
 	optimizer = optim.Adam(net.parameters(), lr=config["learning_rate"], betas=(0.9, 0.999), eps=1e-08)
+
+	## Create writer for tensorboard visualization
+	writer = SummaryWriter('tensorboard/' + config["experiment_name"] + "/") # path to log files
 	
 	## Training net
-
-	# training mode
-	net.train()
 	for epoch in range(config["num_epochs"]):
+		# training mode
+		net.train()
+
 		total_loss = 0.0
 		total_accuracy = 0.0
 
-		for batch_idx, sample in enumerate(train_loader):
+		for batch_idx, sample in tqdm(enumerate(train_loader), ascii=True, desc="epoch [" + str(epoch + 1) + "/" + str(config["num_epochs"]) + "]"):
 			images, true_labels = sample['image'].type(torch.FloatTensor), sample['label'].type(torch.FloatTensor)
 			# zero the parameter (weight) gradients
 			optimizer.zero_grad()
@@ -76,13 +75,40 @@ def main():
 			# track loss for print
 			total_loss += loss.item() # loss.item() gets the a scalar value held in the loss
 			# compute accuracy for print  
-			total_accuracy += (torch.argmax(true_labels, dim=1) == torch.argmax(pred_labels, dim=1)).sum() 
+			total_accuracy += torch.sum(torch.argmax(true_labels, dim=1) == torch.argmax(pred_labels, dim=1))
 
 		if (epoch % config["display_step"] == 0):
-			print("Epoch: %03d, " % (epoch + 1), 
-				"loss= %.3f, " % (total_loss / len(train_loader)),
-				"accuracy= %.3f" % (total_accuracy.numpy() / len(data.X_train))
-				)
+			# evaluation mode
+			net.eval()
+
+			val_acc = 0.0
+			val_loss = 0.0
+
+			for batch_idx, sample in enumerate(valid_loader):
+				images, true_labels = sample['image'].type(torch.FloatTensor), sample['label'].type(torch.FloatTensor)
+				pred_labels = net.forward(images)
+				val_loss += criterion(pred_labels, true_labels).item()
+				val_acc += torch.sum(torch.argmax(true_labels, dim=1) == torch.argmax(pred_labels, dim=1))
+
+			# Prepare variables for print and tensorboard
+			train_loss = total_loss / len(train_loader)
+			train_acc = total_accuracy.numpy() / len(data.X_train)
+			val_loss = val_loss / len(valid_loader)
+			val_acc = val_acc.numpy() / len(data.X_valid)
+
+			if config["verbose"]: 
+				print("Epoch: %03d," % (epoch + 1), 
+					"train_loss= %.3f," % (train_loss), 
+					"train_acc= %.3f," % (train_acc), 
+					"val_loss= %.3f," % (val_loss),
+					"val_acc=%.3f" % (val_acc))
+
+			# Write scalars
+			writer.add_scalar('train_loss', train_loss, epoch)
+			writer.add_scalar('train_acc', train_acc, epoch)
+			writer.add_scalar('val_loss', val_loss, epoch)
+			writer.add_scalar('val_acc', val_acc, epoch)
+
 
 
 	print("Training complete")
