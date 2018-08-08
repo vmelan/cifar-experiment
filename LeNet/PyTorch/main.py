@@ -8,6 +8,7 @@ from torch.utils.data import DataLoader
 from torchvision import transforms
 from model import LeNet
 
+
 def main():
 	with open("config.json", "r") as f:
 		config = json.load(f)
@@ -53,12 +54,15 @@ def main():
 	optimizer = optim.Adam(net.parameters(), lr=config["learning_rate"], betas=(0.9, 0.999), eps=1e-08)
 	
 	## Training net
+
 	# training mode
 	net.train()
 	for epoch in range(config["num_epochs"]):
 		total_loss = 0.0
-		for batch_idx, data in enumerate(train_loader):
-			images, true_labels = data['image'].type(torch.FloatTensor), data['label'].type(torch.FloatTensor)
+		total_accuracy = 0.0
+
+		for batch_idx, sample in enumerate(train_loader):
+			images, true_labels = sample['image'].type(torch.FloatTensor), sample['label'].type(torch.FloatTensor)
 			# zero the parameter (weight) gradients
 			optimizer.zero_grad()
 			# compute forward pass of images through the net 
@@ -71,10 +75,15 @@ def main():
 			optimizer.step()
 			# track loss for print
 			total_loss += loss.item() # loss.item() gets the a scalar value held in the loss
+			# compute accuracy for print  
+			total_accuracy += (torch.argmax(true_labels, dim=1) == torch.argmax(pred_labels, dim=1)).sum() 
 
 		if (epoch % config["display_step"] == 0):
 			print("Epoch: %03d, " % (epoch + 1), 
-				"loss= %.3f" % (total_loss / len(train_loader)))
+				"loss= %.3f, " % (total_loss / len(train_loader)),
+				"accuracy= %.3f" % (total_accuracy.numpy() / len(data.X_train))
+				)
+
 
 	print("Training complete")
 
