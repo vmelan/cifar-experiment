@@ -1,9 +1,6 @@
 import pickle
 import numpy as np
 import cv2
-from sklearn.model_selection import train_test_split
-
-import torch
 from torch.utils import data
 
 
@@ -34,11 +31,15 @@ class CifarDataset(object):
 		# Load config file
 		self.config = config
 		# Load data from data_path
-		self.X_train, self.y_train, self.X_test, self.y_test = self.load_cifar10(config["data_path"])
+		self.X_train, self.y_train, self.X_test, self.y_test = self.load_cifar10(self.config["data_loader"]["data_path"])
+		# shuffle data
+		self.shuffle()
 		# One-hot encode the labels
 		self.y_train, self.y_test = self.one_hot_labels(self.y_train), self.one_hot_labels(self.y_test)
 		# Split train into train/validation
-		self.X_train, self.X_valid, self.y_train, self.y_valid = self.split(self.X_train, self.y_train)
+		# self.X_train, self.X_valid, self.y_train, self.y_valid = self.split(self.X_train, self.y_train)
+		if config["validation"]["split"]: 
+			self.X_train, self.X_valid, self.y_train, self.y_valid = self.split()
 
 	def unpickle(self, file):
 		with open(file, 'rb') as fo:
@@ -82,9 +83,24 @@ class CifarDataset(object):
 
 		return label_data
 
-	def split(self, train_data, train_labels):
-		""" Split train_data into train/validation set """
-		return train_test_split(train_data, train_labels, test_size=0.1, random_state=42)
+	# def split(self, train_data, train_labels):
+	# 	""" Split train_data into train/validation set """
+	# 	return train_test_split(train_data, train_labels, test_size=0.1, random_state=42)
 
+	def split(self):
+		""" Split train_data into train/validation set """
+		validation_split = self.config["validation"]["validation_split"]
+		train_elem = int(self.X_train.shape[0] * (1 - validation_split))
+		X_train, y_train = self.X_train[:train_elem], self.y_train[:train_elem]
+		X_valid, y_valid = self.X_train[train_elem:], self.y_train[train_elem:] 
+
+		return X_train, X_valid, y_train, y_valid 
+
+	def shuffle(self):
+		""" Shuffle the data """ 
+		if self.config["data_loader"]["shuffle"]:
+			indices = np.arange(self.X_train.shape[0])
+			np.random.shuffle(indices)
+			self.X_train, self.y_train = self.X_train[indices], self.y_train[indices]
 
 
