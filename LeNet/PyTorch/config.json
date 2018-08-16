@@ -1,11 +1,25 @@
 {
-	"experiment_name": "LeNet_exp",
-	"data_path": "../../cifar-10-batches-py/",
-	"model_checkpoint_path": "./saved/model_checkpoint.hdf5",
-	"model_load_weights_path": "./saved/model.hdf5", 
-	"num_epochs": 50,
-	"batch_size": 128, 
-	"learning_rate": 0.001,
-	"display_step": 1,
-	"verbose": 1
+	"experiment_name": "LeNet_cifar_test",
+	"cuda": false,
+	"gpu": 0,
+	"data_loader": {
+		"data_path": "../../cifar-10-batches-py/", 
+		"batch_size": 128,
+		"shuffle": true
+	}, 
+	"validation": {
+		"split": true,
+		"validation_split": 0.1
+	},
+	"optimizer_type": "Adam", 
+	"optimizer": {
+		"lr": 0.001, 
+		"weight_decay": 0
+	},
+	"trainer": {
+		"epochs": 30, 
+		"save_dir": "./saved/",
+		"save_freq": 1, 
+		"verbose": 1
+	}
 }
