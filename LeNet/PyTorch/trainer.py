@@ -53,21 +53,29 @@ class Trainer():
 
 		for epoch in range(self.start_epoch, self.config["trainer"]["epochs"]):
 			train_loss, train_acc = self._train_epoch(epoch)
-			val_loss, val_acc = self._valid_epoch(epoch)
+			if self.valid:
+				val_loss, val_acc = self._valid_epoch(epoch)
 
 			# print performance to logger
 			if self.config["trainer"]["verbose"]:
-				self.logger.info("Epoch: {:03d}, "
-					"train_loss= {:.3f}, train_acc= {:.3f}, "
-					"val_loss= {:.3f}, val_acc= {:.3f}".format(
-						epoch+1, train_loss, train_acc, val_loss, val_acc) 
-					)
+				if self.valid:
+					self.logger.info("Epoch: {:03d}, "
+						"train_loss= {:.3f}, train_acc= {:.3f}, "
+						"val_loss= {:.3f}, val_acc= {:.3f}".format(
+							epoch+1, train_loss, train_acc, val_loss, val_acc) 
+						)
+				else:
+					self.logger.info("Epoch: {:03d}, "
+						"train_loss= {:.3f}, train_acc= {:.3f}".format(
+							epoch+1, train_loss, train_acc) 
+						)			
 
 			# Add performance to writer 
 			self.writer.add_scalar('train_loss', train_loss, epoch)
 			self.writer.add_scalar('train_acc', train_acc, epoch)
-			self.writer.add_scalar('val_loss', val_loss, epoch)
-			self.writer.add_scalar('val_acc', val_acc, epoch)
+			if self.valid:
+				self.writer.add_scalar('val_loss', val_loss, epoch)
+				self.writer.add_scalar('val_acc', val_acc, epoch)
 
 		self.logger.info("Training complete")
 
