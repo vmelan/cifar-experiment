@@ -12,7 +12,6 @@ import logging
 from trainer import Trainer
 
 def main():
-
 	with open("config.json", "r") as f:
 		config = json.load(f)
 
@@ -54,13 +53,13 @@ def main():
 		config=config, 
 		resume=None, 
 		train_data_loader=train_loader, 
-		valid_data_loader=valid_loader
+		valid_data_loader=valid_loader, 
+		test_data_loader=test_loader
 		)
 	trainer.train()
 
-	# def __init__(self, model, loss, resume, config, 
-	# 	data_loader, valid_data_loader=None, train_logger=None):
-
+	## Evaluate test data
+	trainer.evaluate()
 
 if __name__ == '__main__':
 	logging.basicConfig(level=logging.INFO, format='%(levelname)s:%(name)s:%(message)s')

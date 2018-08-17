@@ -9,7 +9,7 @@ from tensorboardX import SummaryWriter
 class Trainer():
 
 	def __init__(self, model, config, resume, 
-		train_data_loader, valid_data_loader=None):
+		train_data_loader, valid_data_loader=None, test_data_loader=None):
 
 		self.config = config
 		self.model = model
@@ -115,19 +115,20 @@ class Trainer():
 		return train_loss, train_acc
 
 
-	def _valid_epoch(self, epoch):
+	def _valid_epoch(self):
 		""" Evaluation of validation data for an epoch """
 
-		# Evaluation model
+		# Evaluation mode
 		self.model.eval()
 
 		val_loss, val_acc = 0.0, 0.0
 
-		for batch_idx, sample in enumerate(self.valid_data_loader):
-			images, true_labels = self._to_tensor(sample)
-			pred_labels = self.model.forward(images)
-			val_loss += self.criterion(pred_labels, true_labels).item()
-			val_acc += self._compute_accuracy(true_labels, pred_labels)
+		with torch.no_grad():
+			for batch_idx, sample in enumerate(self.valid_data_loader):
+				images, true_labels = self._to_tensor(sample)
+				pred_labels = self.model.forward(images)
+				val_loss += self.criterion(pred_labels, true_labels).item()
+				val_acc += self._compute_accuracy(true_labels, pred_labels)
 
 		val_loss = val_loss / len(self.valid_data_loader)
 		val_acc = val_acc / len(self.valid_data_loader)
@@ -153,3 +154,22 @@ class Trainer():
 		accuracy = accuracy.numpy() / self.config["data_loader"]["batch_size"] 
 		return accuracy
 
+	def evaluate(self):
+		""" Evaluate of test data """
+
+		# Evaluation mode
+		self.model.eval()
+
+		test_loss, test_acc = 0.0, 0.0
+
+		with torch.no_grad():
+			for batch_idx, sample in enumerate(self.test_data_loader):
+				images, true_labels = self._to_tensor(sample)
+				pred_labels = self.model.forward(images)
+				test_loss += self.criterion(pred_labels, true_labels).item()
+				test_acc += self._compute_accuracy(true_labels, pred_labels)
+
+		test_loss = test_loss / len(self.test_data_loader)
+		test_acc = test_acc / len(self.test_data_loader)
+
+		self.logger.info("test_loss= {:.3f}, test_acc= {:.3f}".format(test_loss, test_acc))
