@@ -1,4 +1,3 @@
-import os
 import logging
 from tqdm import tqdm
 import torch 
@@ -8,7 +7,7 @@ from tensorboardX import SummaryWriter
 
 class Trainer():
 
-	def __init__(self, model, config, resume, 
+	def __init__(self, model, config, 
 		train_data_loader, valid_data_loader=None, test_data_loader=None):
 
 		self.config = config
@@ -17,6 +16,7 @@ class Trainer():
 		self.train_data_loader = train_data_loader 
 		self.valid_data_loader = valid_data_loader 
 		self.valid = True if self.valid_data_loader else False
+		self.test_data_loader = test_data_loader
 
 		# Logger for this class
 		self.logger = logging.getLogger(self.__class__.__name__)
@@ -33,20 +33,25 @@ class Trainer():
 			self.model = self.model.to(self.device)
 
 		# Get optimizer
-		self.optimizer = getattr(optim, config['optimizer_type'])(model.parameters(), **config["optimizer"])
+		self.optimizer = getattr(optim, config["optimizer"]['optimizer_type'])(model.parameters(), 
+			**config["optimizer"]["optimizer_params"])
+		
+		# Learning rate scheduler
+		if (config["scheduler"]["use_scheduler"]):
+			self.lr_scheduler = getattr(optim.lr_scheduler, config["scheduler"]["lr_scheduler_type"])
+			self.lr_scheduler = self.lr_scheduler(self.optimizer, **config["scheduler"]["scheduler_params"])
+			self.lr_scheduler_freq = config["scheduler"]["lr_scheduler_freq"]
+		else:
+			self.lr_scheduler = None
+			self.lr_scheduler_freq = None
+		
 		# Get criterion for computing loss
 		self.criterion = nn.MSELoss()
 
 		self.start_epoch = 0
-		self.checkpoint_dir = os.path.join(config["trainer"]["save_dir"], config["experiment_name"])
 
 		# Create writer for tensorboard visualization
 		self.writer = SummaryWriter('tensorboard/' + config["experiment_name"] + "/") # path to log files
-
-		# Start from a checkpoint
-		if resume: 
-			self._resume_checkpoint(resume)
-
 
 	def train(self):
 		""" Training procedure """
@@ -54,7 +59,13 @@ class Trainer():
 		for epoch in range(self.start_epoch, self.config["trainer"]["epochs"]):
 			train_loss, train_acc = self._train_epoch(epoch)
 			if self.valid:
-				val_loss, val_acc = self._valid_epoch(epoch)
+				val_loss, val_acc = self._valid_epoch()
+
+			# use scheduler 
+			if (self.lr_scheduler and ((epoch + 1) % self.lr_scheduler_freq == 0)):
+				self.lr_scheduler.step(epoch)
+				lr = self.lr_scheduler.get_lr()[0]
+				self.logger.info("New learning Rate: {:.6f}".format(lr))
 
 			# print performance to logger
 			if self.config["trainer"]["verbose"]:
@@ -155,7 +166,7 @@ class Trainer():
 		return accuracy
 
 	def evaluate(self):
-		""" Evaluate of test data """
+		""" Evaluation of test data """
 
 		# Evaluation mode
 		self.model.eval()
@@ -163,7 +174,7 @@ class Trainer():
 		test_loss, test_acc = 0.0, 0.0
 
 		with torch.no_grad():
-			for batch_idx, sample in enumerate(self.test_data_loader):
+			for batch_idx, sample in tqdm(enumerate(self.test_data_loader)):
 				images, true_labels = self._to_tensor(sample)
 				pred_labels = self.model.forward(images)
 				test_loss += self.criterion(pred_labels, true_labels).item()

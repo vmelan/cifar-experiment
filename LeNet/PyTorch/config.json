@@ -1,21 +1,36 @@
 {
-	"experiment_name": "LeNet_cifar_test",
+	"experiment_name": "LeNet_cifar_5epochs",
 	"cuda": false,
 	"gpu": 0,
+
 	"data_loader": {
 		"data_path": "../../cifar-10-batches-py/", 
 		"batch_size": 128,
 		"shuffle": true
 	}, 
+
 	"validation": {
 		"split": true,
 		"validation_split": 0.1
 	},
-	"optimizer_type": "Adam", 
+
 	"optimizer": {
-		"lr": 0.001, 
-		"weight_decay": 0
+		"optimizer_type": "Adam", 
+		"optimizer_params": {
+			"lr": 0.01,
+			"weight_decay": 0
+		}
 	},
+
+	"scheduler": {
+		"use_scheduler": true,
+		"lr_scheduler_type": "ExponentialLR",
+		"lr_scheduler_freq": 5,
+		"scheduler_params": {
+			"gamma": 0.9
+		}
+	},
+
 	"trainer": {
 		"epochs": 30, 
 		"save_dir": "./saved/",

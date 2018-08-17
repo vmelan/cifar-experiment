@@ -1,9 +1,6 @@
 import json
 from data_loader import CifarDataset, CifarDataLoader
 from transformations import ToTensor, ToGrayscale, Normalize
-import torch
-import torch.nn as nn
-import torch.optim as optim
 from torch.utils.data import DataLoader
 from torchvision import transforms
 from model import LeNet
@@ -51,7 +48,6 @@ def main():
 	## Training 
 	trainer = Trainer(model=net,
 		config=config, 
-		resume=None, 
 		train_data_loader=train_loader, 
 		valid_data_loader=valid_loader, 
 		test_data_loader=test_loader
@@ -62,6 +58,7 @@ def main():
 	trainer.evaluate()
 
 if __name__ == '__main__':
-	logging.basicConfig(level=logging.INFO, format='%(levelname)s:%(name)s:%(message)s')
+	# logging.basicConfig(level=logging.INFO, format='%(levelname)s:%(name)s: %(message)s')
+	logging.basicConfig(level=logging.DEBUG, format='%(levelname)s:%(name)s: %(message)s')
 
 	main()
