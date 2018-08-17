@@ -1,6 +1,7 @@
 import json
+import logging
 from data_loader import DataLoader
-import model
+from model import LeNet
 from trainer import Trainer 
 
 def main():
@@ -11,22 +12,24 @@ def main():
 	data = DataLoader(config)
 
 	# Create LeNet model
-	LeNet = model.LeNet(config)
+	net = LeNet(config)
 
 	# Create trainer
-	trainer = Trainer(LeNet.model, data, config)
+	trainer = Trainer(net.model, data, config)
 
 	# Train model
 	trainer.train()
 
 	# Save LeNet model weights
-	LeNet.save_weights()
+	trainer.save_weights()
 
 	# Load weights
-	LeNet.load_weights(config["model_load_weights_path"])
+	trainer.load_weights(config["model_load_weights_path"])
 
 	# Evaluate validation set
 	trainer.evaluate()
 
 if __name__ == '__main__':
+	logging.basicConfig(level=logging.INFO, format='%(levelname)s:%(name)s: %(message)s')
+
 	main()

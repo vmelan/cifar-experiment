@@ -4,7 +4,7 @@ from keras.models import Model
 from keras.initializers import glorot_uniform
 from keras.models import model_from_json
 import keras.backend as K
-from keras.optimizers import Adam
+import keras.optimizers as optim
 
 # def gaussian(x):
 # 	return K.exp(-K.pow(x, 2))
@@ -14,6 +14,11 @@ class LeNet(object):
 	def __init__(self, config):
 		self.config = config
 		self.model = None
+
+		# Get optimizer
+		self.optimizer = getattr(optim, config["optimizer"]["optimizer_type"])
+		self.optimizer = self.optimizer(**config["optimizer"]["optimizer_params"])
+
 		self.build_model()
 
 	def build_model(self, input_shape=(32, 32, 1)):
@@ -65,50 +70,6 @@ class LeNet(object):
 		""" 
 		Compile model using Adam optimizer
 		"""
-		self.model.compile(optimizer=
-			Adam(lr=self.config["learning_rate"], beta_1=0.9, beta_2=0.999, epsilon=1e-7), 
+		self.model.compile(optimizer=self.optimizer, 
 			loss='categorical_crossentropy', 
 			metrics=['accuracy'])		
-
-	# def save_model(self):
-	# 	""" Save network model """
-
-	# 	if self.model is None:
-	# 		raise Exception("You have to build the model first")
-
-	# 	# Serialize model to JSON
-	# 	model_json = self.model.to_json()
-	# 	with open("./saved/model.json", "w") as json_file:
-	# 		json_file.write(model_json)
-
-	# 	print("Model network saved")
-
-	def save_weights(self):
-		""" Save network weights """
-		if self.model is None:
-			raise Exception("You have to build the model first")
-		# Serialize weights to hdf5
-		self.model.save_weights("saved/model.hdf5")
-
-		print("Model weights saved")
-
-		# def load_model(self):
-		# 	""" Load model architecture """
-			
-		# 	with open("./saved/model.json", "r") as json_file:
-		# 		loaded_model_json = json_file.read()
-
-		# 	loaded_model = model_from_json(loaded_model_json)
-
-		# 	return loaded_model 
-
-
-	def load_weights(self, checkpoint_path):
-		""" Load model weights """
-		if self.model is None:
-			raise Exception("You have to build the model first")		
-
-		print("Loading model checkpoint %s ... \n" % (checkpoint_path))
-		self.model.load_weights(checkpoint_path)
-		print("Model weights loaded")
-
