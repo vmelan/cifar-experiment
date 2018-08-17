@@ -1,3 +1,4 @@
+import os
 import logging
 from tqdm import tqdm
 import torch 
@@ -53,10 +54,12 @@ class Trainer():
 		# Create writer for tensorboard visualization
 		self.writer = SummaryWriter('tensorboard/' + config["experiment_name"] + "/") # path to log files
 
+
 	def train(self):
 		""" Training procedure """
 
 		for epoch in range(self.start_epoch, self.config["trainer"]["epochs"]):
+			# train and evaluate 
 			train_loss, train_acc = self._train_epoch(epoch)
 			if self.valid:
 				val_loss, val_acc = self._valid_epoch()
@@ -117,8 +120,7 @@ class Trainer():
 			train_acc += self._compute_accuracy(true_labels, pred_labels)
 
 			# add graph to writer 
-			if (epoch == 0 and batch_idx == 0): self.writer.add_graph(self.model, (images,))
-
+			if (epoch == self.start_epoch and batch_idx == 0): self.writer.add_graph(self.model, (images,))
 
 		train_loss = train_loss / len(self.train_data_loader)
 		train_acc = train_acc / len(self.train_data_loader)
@@ -165,6 +167,7 @@ class Trainer():
 		accuracy = accuracy.numpy() / self.config["data_loader"]["batch_size"] 
 		return accuracy
 
+
 	def evaluate(self):
 		""" Evaluation of test data """
 
@@ -174,7 +177,7 @@ class Trainer():
 		test_loss, test_acc = 0.0, 0.0
 
 		with torch.no_grad():
-			for batch_idx, sample in tqdm(enumerate(self.test_data_loader)):
+			for batch_idx, sample in tqdm(enumerate(self.test_data_loader), desc="Inference"):
 				images, true_labels = self._to_tensor(sample)
 				pred_labels = self.model.forward(images)
 				test_loss += self.criterion(pred_labels, true_labels).item()
@@ -184,3 +187,14 @@ class Trainer():
 		test_acc = test_acc / len(self.test_data_loader)
 
 		self.logger.info("test_loss= {:.3f}, test_acc= {:.3f}".format(test_loss, test_acc))
+
+
+	def save_model_params(self):
+		""" Save model parameters after training """
+
+		save_path = os.path.join(self.config["trainer"]["save_dir"], 
+			self.config["experiment_name"])
+		if not os.path.exists(save_path):
+			os.makedirs(save_path)
+		torch.save(self.model.state_dict(), save_path + "/" + self.config["trainer"]["save_trained_name"])
+		self.logger.info("Model parameters saved")

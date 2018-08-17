@@ -1,12 +1,12 @@
 import json
-from data_loader import CifarDataset, CifarDataLoader
-from transformations import ToTensor, ToGrayscale, Normalize
+import logging
 from torch.utils.data import DataLoader
 from torchvision import transforms
 from model import LeNet
-
-import logging
 from trainer import Trainer
+from data_loader import CifarDataset, CifarDataLoader
+from transformations import ToTensor, ToGrayscale, Normalize
+
 
 def main():
 	with open("config.json", "r") as f:
@@ -54,11 +54,13 @@ def main():
 		)
 	trainer.train()
 
+	## Saving model parameters
+	trainer.save_model_params()
+
 	## Evaluate test data
 	trainer.evaluate()
 
 if __name__ == '__main__':
-	# logging.basicConfig(level=logging.INFO, format='%(levelname)s:%(name)s: %(message)s')
-	logging.basicConfig(level=logging.DEBUG, format='%(levelname)s:%(name)s: %(message)s')
+	logging.basicConfig(level=logging.INFO, format='%(levelname)s:%(name)s: %(message)s')
 
 	main()
