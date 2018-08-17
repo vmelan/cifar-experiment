@@ -37,7 +37,6 @@ class CifarDataset(object):
 		# One-hot encode the labels
 		self.y_train, self.y_test = self.one_hot_labels(self.y_train), self.one_hot_labels(self.y_test)
 		# Split train into train/validation
-		# self.X_train, self.X_valid, self.y_train, self.y_valid = self.split(self.X_train, self.y_train)
 		if config["validation"]["split"]: 
 			self.X_train, self.X_valid, self.y_train, self.y_valid = self.split()
 
@@ -83,9 +82,6 @@ class CifarDataset(object):
 
 		return label_data
 
-	# def split(self, train_data, train_labels):
-	# 	""" Split train_data into train/validation set """
-	# 	return train_test_split(train_data, train_labels, test_size=0.1, random_state=42)
 
 	def split(self):
 		""" Split train_data into train/validation set """
