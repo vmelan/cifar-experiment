@@ -1,8 +1,7 @@
 import os
 import logging
-from keras.callbacks import ModelCheckpoint, TensorBoard
-
-from tqdm import tqdm
+from keras.callbacks import ModelCheckpoint, TensorBoard, LearningRateScheduler
+import numpy as np
 
 class Trainer(object):
 
@@ -10,8 +9,7 @@ class Trainer(object):
 		self.model = model
 		self.data = data 
 		self.config = config
-		self.callbacks = []
-
+		
 		# Validation data
 		if config["validation"]["split"]:
 			self.validation_data = (self.data.X_valid, self.data.y_valid)
@@ -22,13 +20,16 @@ class Trainer(object):
 		self.logger = logging.getLogger(self.__class__.__name__)
 
 		# Populate the callbacks into the self.callbacks list
+		self.callbacks = []
 		self.init_callbacks()
+
 
 	def init_callbacks(self):
 		"""
 		Create callbacks 
 		"""
 
+		# Checkpoint callback
 		save_ckpt_path = self.config["trainer"]["save_dir"] + self.config["experiment_name"] + "/" 
 		if not os.path.exists(save_ckpt_path):
 			os.makedirs(save_ckpt_path)
@@ -42,6 +43,7 @@ class Trainer(object):
 				)
 			)
 
+		# Tensorboard callback
 		self.callbacks.append(
 			TensorBoard(
 				log_dir="tensorboard/" + self.config["experiment_name"], 
@@ -51,28 +53,34 @@ class Trainer(object):
 				)
 			)
 
+		# Learning Rate Scheduler callback
+		if self.config["scheduler"]["use_scheduler"]:
+			lr_scheduler = self._step_decay_schedule(
+				initial_lr=self.config["optimizer"]["optimizer_params"]["lr"], 
+				**self.config["scheduler"]["scheduler_params"])
+			self.callbacks.append(lr_scheduler)
+
+
+	def _step_decay_schedule(self, initial_lr, decay_rate, decay_steps):
+		""" Wrapper function to create a LearningRateScheduler with step decay schedule """
+
+		def schedule(epoch):
+			return initial_lr * (decay_rate ** np.floor(epoch / decay_steps))
+
+		return LearningRateScheduler(schedule, verbose=0)
 
 	def train(self):
 		"""
 		Train the model
 		"""
-		if self.config["trainer"]["verbose"]:
-			self.model.fit_generator(generator=(self.data.next_batch()),
-				validation_data=(self.data.X_valid, self.data.y_valid),  
-				epochs=self.config["trainer"]["epochs"],
-				steps_per_epoch=self.config["trainer"]["num_iter_per_epoch"], 
-				callbacks=self.callbacks,
-				verbose=1
-				)
-		else:
-			for epoch in tqdm(range(self.config["trainer"]["epochs"])):
-				self.model.fit_generator(generator=(self.data.next_batch()),
-					validation_data=(self.data.X_valid, self.data.y_valid),  
-					epochs=1,
-					steps_per_epoch=self.config["trainer"]["num_iter_per_epoch"], 
-					callbacks=self.callbacks,
-					verbose=0
-					)			
+
+		self.model.fit_generator(generator=(self.data.next_batch()),
+			validation_data=(self.data.X_valid, self.data.y_valid),  
+			epochs=self.config["trainer"]["epochs"],
+			steps_per_epoch=self.config["trainer"]["num_iter_per_epoch"], 
+			callbacks=self.callbacks,
+			verbose=self.config["trainer"]["verbose"]
+			)	
 
 		self.logger.info("Training complete")
 

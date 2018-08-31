@@ -17,14 +17,16 @@ def main():
 	# Create trainer
 	trainer = Trainer(net.model, data, config)
 
-	# Train model
-	trainer.train()
+	# # Train model
+	# trainer.train()
 
-	# Save LeNet model weights
-	trainer.save_weights()
+	# # Save LeNet model weights
+	# trainer.save_weights()
 
 	# Load weights
-	trainer.load_weights(config["model_load_weights_path"])
+	load_path = self.config["trainer"]["save_dir"] + self.config["experiment_name"] + \
+			"/" + self.config["trainer"]["save_trained_name"] +  "_full.hdf5"
+	trainer.load_weights(load_path)
 
 	# Evaluate validation set
 	trainer.evaluate()

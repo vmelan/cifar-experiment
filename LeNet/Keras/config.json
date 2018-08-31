@@ -26,10 +26,10 @@
 
 	"scheduler": {
 		"use_scheduler": true,
-		"lr_scheduler_type": "ExponentialLR",
-		"lr_scheduler_freq": 5,
+		"lr_scheduler_type": "exponential_decay",
 		"scheduler_params": {
-			"gamma": 0.9
+			"decay_rate": 0.9,
+			"decay_steps": 5
 		}
 	},
 
@@ -40,6 +40,6 @@
 		"save_dir": "./saved/",
 		"save_trained_name": "model_trained",
 		"save_freq": 5, 
-		"verbose": 0
+		"verbose": 2
 	}
 }
