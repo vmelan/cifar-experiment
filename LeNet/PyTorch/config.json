@@ -9,6 +9,7 @@
 		"shuffle": true
 	}, 
 
+	"validation": {
 		"split": true,
 		"validation_split": 0.1
 	},

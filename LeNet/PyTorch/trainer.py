@@ -156,7 +156,7 @@ class Trainer():
 		"""
 		images, true_labels = sample['image'].type(torch.FloatTensor), sample['label'].type(torch.FloatTensor)
 		if self.with_cuda:
-			images, true_labels = images.to(self.gpu), true_labels.to(self.gpu)
+			images, true_labels = images.to(self.device), true_labels.to(self.device)
 		return images, true_labels
 
 

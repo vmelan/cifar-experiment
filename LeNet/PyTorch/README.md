@@ -38,3 +38,6 @@ We can observe both the accuracy and loss for the training and the validation se
 <p align="center">
   <img src="images/tensorboard_scalar_valid.PNG" style="width: 50%, height: 50%">
 </p>
+
+## Performance
+On the test dataset, the accuracy is 40.5 % 
