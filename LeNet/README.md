@@ -11,7 +11,7 @@ ZIP codes, checks, and so on.
 ## Architecture 
 The architecture of the CNN is presented in Figure 2 of the paper: 
 <p align="center">
-	<img src="images/lenet.PNG" width=75% height=75%>
+	<img src="images/lenet.png" width=75% height=75%>
 	<br>Figure : Architecture of LeNet-5
 </p>
 While the output units are Radial Basis Function (RBF) units, in the implementations, we will 
