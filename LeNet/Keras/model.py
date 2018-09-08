@@ -40,20 +40,16 @@ class LeNet(object):
 			padding="valid", \
 			name="Conv_2")(X)		
 		X = Activation("tanh", name="Tanh_2")(X)
-		X = AveragePooling2D(pool_size=(2, 2), name="AvgPool_2")(X)
-		# 3rd conv layer : CONV + TANH
-		X = Conv2D(filters=120, kernel_size=(5, 5), strides=(1, 1), \
-			kernel_initializer=glorot_uniform(seed=0), \
-			padding="valid", \
-			name="Conv_3")(X)
-		X = Activation("tanh", name="Tanh_3")(X)		
+		X = AveragePooling2D(pool_size=(2, 2), name="AvgPool_2")(X)	
 		# Flatten
 		X = Flatten(name="Flatten")(X)
 		# Fully connected layer 1 : DENSE + TANH
+		X = Dense(120, name="FC_1")(X)
+		# Fully connected layer 2 : DENSE + TANH
 		X = Dense(84, name="FC_1")(X)
 		X = Activation("tanh", name="Tanh_4")(X)
 
-		# Output with Gaussian connections
+		# Output with softmax
 		X = Dense(10, name="FC_2")(X)
 
 		X = Activation("softmax", name="softmax")(X)
