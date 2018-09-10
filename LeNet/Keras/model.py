@@ -45,12 +45,12 @@ class LeNet(object):
 		X = Flatten(name="Flatten")(X)
 		# Fully connected layer 1 : DENSE + TANH
 		X = Dense(120, name="FC_1")(X)
+		X = Activation("tanh", name="Tanh_3")(X)
 		# Fully connected layer 2 : DENSE + TANH
-		X = Dense(84, name="FC_1")(X)
+		X = Dense(84, name="FC_2")(X)
 		X = Activation("tanh", name="Tanh_4")(X)
-
 		# Output with softmax
-		X = Dense(10, name="FC_2")(X)
+		X = Dense(10, name="FC_3")(X)
 
 		X = Activation("softmax", name="softmax")(X)
 
