@@ -12,7 +12,7 @@ class AlexNet(nn.Module):
 			nn.Conv2d(
 				in_channels=3, 
 				out_channels=96, 
-				kernel_size=(4, 4), 
+				kernel_size=(11, 11), 
 				stride=(4, 4), 
 				padding=0), 
 			nn.ReLU()
@@ -25,7 +25,7 @@ class AlexNet(nn.Module):
 				out_channels=256, 
 				kernel_size=(5, 5), 
 				stride=(1, 1), 
-				padding=1), 
+				padding=2), 
 			nn.ReLU()
 			)
 		self.lrn2 = nn.LocalResponseNorm(size=2, alpha=2e-5, beta=0.75, k=1)
@@ -57,6 +57,7 @@ class AlexNet(nn.Module):
 				padding=1), 
 			nn.ReLU()
 			)
+		self.pool3 = nn.MaxPool2d(kernel_size=2, stride=2)
 		self.dense1 = nn.Sequential(
 			nn.Linear(in_features=9216, out_features=4096),
 			nn.ReLU()
@@ -66,7 +67,6 @@ class AlexNet(nn.Module):
 			nn.ReLU()
 			)
 		self.dense3 = nn.Linear(in_features=4096, out_features=10)
-
 
 
 	def forward(self, x):
@@ -80,6 +80,7 @@ class AlexNet(nn.Module):
 		x = self.conv3(x)
 		x = self.conv4(x)
 		x = self.conv5(x)
+		x = self.pool3(x)
 		x = x.view(x.size(0), -1) # flatten to size (batch_size, 6 x 6 x 256)
 		x = self.dense1(x)
 		x = self.dense2(x)
@@ -90,3 +91,6 @@ class AlexNet(nn.Module):
 if __name__ == '__main__':
 	net = AlexNet()
 	print(net)
+
+	x = torch.zeros(1, 3, 224, 224)
+	print(net.forward(x))
