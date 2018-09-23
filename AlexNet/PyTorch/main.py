@@ -35,7 +35,7 @@ def main():
 	train_loader = DataLoader(train_data_transformed, 
 		batch_size=config["data_loader"]["batch_size"],
 		shuffle=True, 
-		num_workers=4)
+		num_workers=0)
 
 	if config["validation"]["split"]:
 		valid_data_transformed = CifarDataLoader(config, data.X_valid, data.y_valid, 
@@ -43,20 +43,35 @@ def main():
 		valid_loader = DataLoader(valid_data_transformed, 
 			batch_size=config["data_loader"]["batch_size"], 
 			shuffle=False, 
-			num_workers=4)
+			num_workers=0)
+	else:
+		valid_loader = None
 
 	test_data_transformed = CifarDataLoader(config, data.X_test, data.y_test, 
 		transform=eval_transforms)
 	test_loader = DataLoader(test_data_transformed, 
 		batch_size=config["data_loader"]["batch_size"], 
 		shuffle=False, 
-		num_workers=4)
+		num_workers=0)
 
 	## Create neural net 
 	net = AlexNet()
 
+	## Training 
+	trainer = Trainer(model=net, 
+		config=config, 
+		train_data_loader=train_loader,
+		valid_data_loader=valid_loader, 
+		test_data_loader=test_loader
+		)
+	trainer.train()
 
-	pdb.set_trace()
+	## Saving model parameters
+	trainer.save_model_params()
+
+	## Evaluate test data
+	trainer.evaluate()
+
 
 if __name__ == '__main__':
 	# set logging config 

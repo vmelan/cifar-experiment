@@ -142,7 +142,7 @@ class Trainer():
 			for batch_idx, sample in enumerate(self.valid_data_loader):
 				images, true_labels = self._to_tensor(sample)
 				pred_labels = self.model.forward(images)
-				val_loss += self.criterion(pred_labels, true_labels).item()
+				val_loss += self.criterion(pred_labels, torch.argmax(true_labels, 1)).item()
 				val_acc += self._compute_accuracy(true_labels, pred_labels)
 
 		val_loss = val_loss / len(self.valid_data_loader)
@@ -184,7 +184,7 @@ class Trainer():
 			for batch_idx, sample in tqdm(enumerate(self.test_data_loader), desc="Inference"):
 				images, true_labels = self._to_tensor(sample)
 				pred_labels = self.model.forward(images)
-				test_loss += self.criterion(pred_labels, true_labels).item()
+				test_loss += self.criterion(pred_labels, torch.argmax(true_labels, 1)).item()
 				test_acc += self._compute_accuracy(true_labels, pred_labels)
 
 		test_loss = test_loss / len(self.test_data_loader)
