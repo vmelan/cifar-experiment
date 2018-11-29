@@ -1,0 +1,35 @@
+{
+	"experiment_name": "LeNet_exp",
+	"load_model": "./saved/LeNet_exp/model_trained_full.hdf5" ,
+
+	"data_loader": {
+		"data_path": "../../cifar-10-batches-py/", 
+		"shuffle": true
+	}, 
+
+	"validation": {
+		"split": false,
+		"validation_split": 0.1
+	},
+
+	"optimizer": {
+		"optimizer_type": "AdamOptimizer", 
+		"optimizer_params": {
+			"learning_rate": 0.01,
+			"beta1": 0.9,
+			"beta2": 0.999, 
+			"epsilon": 1e-7
+		}
+	},
+
+	"trainer": {
+		"epochs": 30, 
+		"batch_size": 16,
+		"buffer_size": 1000,
+		"num_iter_per_epoch": 350,
+		"save_dir": "./saved/",
+		"save_trained_name": "model_trained",
+		"save_freq": 5, 
+		"verbose": 2
+	}
+}
