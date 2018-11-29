@@ -10,8 +10,8 @@ from tensorflow.python.keras.layers import MaxPooling2D
 
 
 
-def model_fn(features, labels, mode, config):
-	X = features["x"]
+def model_fn(features, labels, mode, params):
+	X_input = features["image"]
 
 	# Conv1
 	X = Conv2D(
@@ -103,7 +103,10 @@ def model_fn(features, labels, mode, config):
 		# the neural network and the true labels for the input data. 
 		# This gives the cross-entropy for each image in the batch. 
 
-		cross_entropy = tf.nn.sparse_softmax_cross_entropy_with_logtis(labels=labels, 
+		# cross_entropy = tf.nn.sparse_softmax_cross_entropy_with_logits(labels=labels, 
+		# 	logits=logits)
+
+		cross_entropy = tf.nn.softmax_cross_entropy_with_logits_v2(labels=labels, 
 			logits=logits)
 
 		# Reduce the cross-entropy batch-tensor to a single number 
@@ -111,8 +114,8 @@ def model_fn(features, labels, mode, config):
 		loss = tf.reduce_mean(cross_entropy)
 
 		# Define the optimizer for improving the neural network 
-		optimizer = getattr(tf.train, config["optimizer"]["optimizer_type"])(
-			**config["optimizer"]["optimizer_params"])
+		optimizer = getattr(tf.train, params["optimizer"]["optimizer_type"])(
+			**params["optimizer"]["optimizer_params"])
 
 		# Get the TensorFlow op for doing a single optimization step 
 		train_op = optimizer.minimize(
@@ -120,8 +123,12 @@ def model_fn(features, labels, mode, config):
 
 		# Define the evaluation metrics, 
 		# in this case the classification accuracy 
+		# metrics = {
+		# "accuracy": tf.metrics.accuracy(labels, y_pred_cls)
+		# }
+
 		metrics = {
-		"accuracy": tf.metrics.accuracy(labels, y_pred_cls)
+		"accuracy": tf.metrics.accuracy(labels, y_pred)
 		}
 
 		# Wrap all of this in a n EstimatorSpec
