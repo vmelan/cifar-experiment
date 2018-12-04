@@ -8,9 +8,7 @@ from tensorflow.python.keras.layers import Conv2D, Dense, Flatten, Activation
 from tensorflow.python.keras.layers import MaxPooling2D 
 
 
-
-
-def model_fn(features, labels, mode, params):
+def AlexNet(features):
 	X_input = features["image"]
 
 	# Conv1
@@ -75,6 +73,11 @@ def model_fn(features, labels, mode, params):
 
 	# Fully connected layer 3 
 	X = Dense(10, name="FC_3")(X)	
+
+	return X	
+
+def model_fn(features, labels, mode, params):
+	X = AlexNet(features)
 
 	# logits output of the neural network 
 	logits = X 
