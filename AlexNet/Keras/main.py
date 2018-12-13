@@ -18,10 +18,19 @@ def main():
 	pdb.set_trace()
 
 	# Create trainer
+	trainer = Trainer(net.model, data, config)
 
+	# Train model 
+	trainer.train()
 
+	# Save model weights
+	trainer.save_model()
 
+	# Load weights
+	net.model = trainer.load_model(config["load_model"])
 
+	# Evaluation test set
+	trainer.evaluate()
 
 if __name__ =='__main__':
 	logging.basicConfig(level=logging.INFO, format='%(levelname)s:%(name)s: %(message)s')
