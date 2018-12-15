@@ -12,10 +12,12 @@ class DataLoader():
 			config["data_loader"]["data_path"])
 		# Shuffle data
 		self.shuffle()
-		# Scale inputs 
+		# Scale inputs
 		self.X_train, self.X_test = self.scale_data(self.X_train), self.scale_data(self.X_test)
-		# Convert inputs to grayscale
-		self.X_train, self.X_test = self.convert_grayscale(self.X_train), self.convert_grayscale(self.X_test)
+		# Resize images
+		# self.X_train, self.X_test = self.resize(self.X_train), self.resize(self.X_test)
+		# # Convert inputs to grayscale
+		# self.X_train, self.X_test = self.convert_grayscale(self.X_train), self.convert_grayscale(self.X_test)
 		# One-hot encode the labels
 		self.y_train, self.y_test = self.one_hot_labels(self.y_train), self.one_hot_labels(self.y_test)
 		# Split train into train/validation
@@ -53,15 +55,24 @@ class DataLoader():
 		test_data = np.rollaxis(test_data, 1, 4)
 		test_labels = np.array(test_labels)
 
-		return train_data, train_labels, test_data, test_labels		
+		return train_data, train_labels, test_data, test_labels
 
 	def scale_data(self, data):
-		""" 
+		"""
 		Scale the row pixel intensities to the range [0, 1]
 		"""
 
 		data = data.astype(np.float32) / 255.0
 		return data
+
+	# def resize(self, data):
+	# 	"""
+	# 	Resize the images to size (227, 227)
+	# 	"""
+	# 	output = np.zeros((data.shape[0], 227, 227, data.shape[-1]))
+	# 	for i, image in enumerate(data):
+	# 		output[i] = cv2.resize(image, (227, 227))
+	# 	return output
 
 	def convert_grayscale(self, data_image):
 		"""
@@ -86,7 +97,7 @@ class DataLoader():
 		""" Split train_data into train/validation set """
 		validation_split = self.config["validation"]["validation_split"]
 		train_elem = int(self.X_train.shape[0] * (1 - validation_split))
-		X_train, y_train = self.X_train[:train_elem], self.y_train[:train_elem] 
+		X_train, y_train = self.X_train[:train_elem], self.y_train[:train_elem]
 		X_valid, y_valid = self.X_train[train_elem:], self.y_train[train_elem:]
 
 		return X_train, X_valid, y_train, y_valid
@@ -104,4 +115,3 @@ class DataLoader():
 		while True:
 			idx = np.random.choice(self.X_train.shape[0], size=self.config["trainer"]["batch_size"])
 			yield (self.X_train[idx], self.y_train[idx])
-

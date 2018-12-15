@@ -1,32 +1,44 @@
-from keras.models import Model 
-from keras.layers import Input 
-from keras.layers import Conv2D, Dense, Flatten, Activation, MaxPooling2D
-
+from keras.models import Model
+from keras.layers import Input
+from keras.layers import Conv2D, Dense, Flatten, Activation, MaxPooling2D, Lambda
+import keras.optimizers as optim
+import tensorflow as tf
 
 class AlexNet(object):
 	""" Create AlexNet class """
 	def __init__(self, config):
-		self.config = config 
-		self.model = None 
+		self.config = config
+		self.model = None
 
-		# Get optimizer 
+		# Get optimizer
 		self.optimizer = getattr(optim, config["optimizer"]["optimizer_type"])
 		self.optimizer = self.optimizer(**config["optimizer"]["optimizer_params"])
 
 		self.build_model()
 
-	def build_model(self, input_shape=(227, 227, 1)):
+	def build_model(self, input_shape=(32, 32, 3)):
 
-		# Define the input as a tensor with shape input_shape 
+		# Define the input as a tensor with shape input_shape
 		X_input = Input(shape=input_shape, name="Input")
+
+		# Helper function
+		def resize(image):
+		    return tf.image.resize_images(image, [227, 227])
+
+	    # Resize data by using Lambda
+	    # Lambda Wraps arbitrary expression as a Layer object.
+		X = Lambda(resize,
+			name="resize",
+			input_shape=input_shape,
+			output_shape=(227, 227, 3))(X_input)
 
 		# Conv1
 		X = Conv2D(
-			filters=96, 
-			kernel_size=(11, 11), 
-			strides=(4, 4), 
-			padding="valid", 
-			name="Conv_1")(X_input)
+			filters=96,
+			kernel_size=(11, 11),
+			strides=(4, 4),
+			padding="valid",
+			name="Conv_1")(X)
 		X = Activation("relu", name="Relu_1")(X)
 
 		X = MaxPooling2D(pool_size=3, strides=2, name="MaxPool_1")(X)
@@ -34,38 +46,38 @@ class AlexNet(object):
 		# Conv2
 		X = Conv2D(
 			filters=256,
-			kernel_size=(5, 5), 
-			strides=(1, 1), 
-			padding="same", 
+			kernel_size=(5, 5),
+			strides=(1, 1),
+			padding="same",
 			name="Conv_2")(X)
 		X = Activation("relu", name="Relu_2")(X)
 
 		X = MaxPooling2D(pool_size=3, strides=2, name="MaxPool_2")(X)
 
-		# Conv3 
+		# Conv3
 		X = Conv2D(
-			filters=384, 
-			kernel_size=(3, 3), 
-			strides=(1, 1), 
-			padding="same", 
+			filters=384,
+			kernel_size=(3, 3),
+			strides=(1, 1),
+			padding="same",
 			name="Conv_3")(X)
 		X = Activation("relu", name="Relu_3")(X)
 
 		# Conv4
 		X = Conv2D(
-			filters=384, 
-			kernel_size=(3, 3), 
+			filters=384,
+			kernel_size=(3, 3),
 			strides=(1, 1),
-			padding="same", 
+			padding="same",
 			name="Conv_4")(X)
 		X = Activation("relu", name="Relu_4")(X)
 
 		# Conv5
 		X = Conv2D(
-			filters=256, 
-			kernel_size=(3, 3), 
-			strides=(1, 1), 
-			padding="same", 
+			filters=256,
+			kernel_size=(3, 3),
+			strides=(1, 1),
+			padding="same",
 			name="Conv_5")(X)
 		X = Activation("relu", name="Relu_5")(X)
 
@@ -77,13 +89,13 @@ class AlexNet(object):
 		# Fully connected layer 1
 		X = Dense(4096, name="FC_1")(X)
 
-		# Fully connected layer 2 
+		# Fully connected layer 2
 		X = Dense(4096, name="FC_2")(X)
 
-		# Fully connected layer 3 
+		# Fully connected layer 3
 		X = Dense(10, name="FC_3")(X)
 
-		# Create model 
+		# Create model
 		self.model = Model(inputs=X_input, outputs=X, name="AlexNet")
 
 		# Compile model
@@ -91,10 +103,8 @@ class AlexNet(object):
 
 
 	def compile(self):
-		""" Compile model using optimizer, 
+		""" Compile model using optimizer,
 		categorical crossentropy as loss and accuracy as metric """
 		self.model.compile(optimizer=self.optimizer,
-			loss="categorical_crossentropy", 
+			loss="categorical_crossentropy",
 			metrics=["accuracy"])
-		
-		

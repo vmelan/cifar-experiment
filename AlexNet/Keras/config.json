@@ -5,9 +5,9 @@
 	"gpu": 0,
 
 	"data_loader": {
-		"data_path": "../../cifar-10-batches-py/", 
+		"data_path": "../../cifar-10-batches-py/",
 		"shuffle": true
-	}, 
+	},
 
 	"validation": {
 		"split": false,
@@ -15,23 +15,23 @@
 	},
 
 	"optimizer": {
-		"optimizer_type": "Adam", 
+		"optimizer_type": "Adam",
 		"optimizer_params": {
 			"lr": 0.01,
 			"beta_1": 0.9,
-			"beta_2": 0.999, 
+			"beta_2": 0.999,
 			"epsilon": 1e-7,
 			"decay": 0
 		}
 	},
-	
+
 	"trainer": {
-		"epochs": 30, 
+		"epochs": 30,
 		"batch_size": 128,
 		"num_iter_per_epoch": 350,
 		"save_dir": "./saved/",
 		"save_trained_name": "model_trained",
-		"save_freq": 5, 
-		"verbose": 2
+		"save_freq": 5,
+		"verbose": 1
 	}
 }
