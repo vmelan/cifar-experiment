@@ -1,23 +1,22 @@
 import os
 import logging
 from tqdm import tqdm
-import torch 
+import torch
 import torch.nn as nn
 import torch.optim as optim
 from tensorboardX import SummaryWriter
 
-import pdb
 
 class Trainer():
 
-	def __init__(self, model, config, 
+	def __init__(self, model, config,
 		train_data_loader, valid_data_loader=None, test_data_loader=None):
 
 		self.config = config
 		self.model = model
 
-		self.train_data_loader = train_data_loader 
-		self.valid_data_loader = valid_data_loader 
+		self.train_data_loader = train_data_loader
+		self.valid_data_loader = valid_data_loader
 		self.valid = True if self.valid_data_loader else False
 		self.test_data_loader = test_data_loader
 
@@ -32,13 +31,14 @@ class Trainer():
 		elif not config["cuda"] and torch.cuda.is_available():
 			self.logger.info("Training is performed on CPU by user's choice")
 		else:
+			self.logger.info("Training is performed on GPU")
 			self.device = torch.device('cuda:' + str(config['gpu']))
 			self.model = self.model.to(self.device)
 
 		# Get optimizer
-		self.optimizer = getattr(optim, config["optimizer"]['optimizer_type'])(model.parameters(), 
+		self.optimizer = getattr(optim, config["optimizer"]['optimizer_type'])(model.parameters(),
 			**config["optimizer"]["optimizer_params"])
-		
+
 		# Learning rate scheduler
 		if (config["scheduler"]["use_scheduler"]):
 			self.lr_scheduler = getattr(optim.lr_scheduler, config["scheduler"]["lr_scheduler_type"])
@@ -47,7 +47,7 @@ class Trainer():
 		else:
 			self.lr_scheduler = None
 			self.lr_scheduler_freq = None
-		
+
 		# Get criterion for computing loss
 		self.criterion = nn.CrossEntropyLoss()
 
@@ -61,12 +61,12 @@ class Trainer():
 		""" Training procedure """
 
 		for epoch in range(self.start_epoch, self.config["trainer"]["epochs"]):
-			# train and evaluate 
+			# train and evaluate
 			train_loss, train_acc = self._train_epoch(epoch)
 			if self.valid:
 				val_loss, val_acc = self._valid_epoch()
 
-			# use scheduler 
+			# use scheduler
 			if (self.lr_scheduler and ((epoch + 1) % self.lr_scheduler_freq == 0)):
 				self.lr_scheduler.step(epoch)
 				lr = self.lr_scheduler.get_lr()[0]
@@ -78,15 +78,15 @@ class Trainer():
 					self.logger.info("Epoch: {:03d}, "
 						"train_loss= {:.3f}, train_acc= {:.3f}, "
 						"val_loss= {:.3f}, val_acc= {:.3f}".format(
-							epoch+1, train_loss, train_acc, val_loss, val_acc) 
+							epoch+1, train_loss, train_acc, val_loss, val_acc)
 						)
 				else:
 					self.logger.info("Epoch: {:03d}, "
 						"train_loss= {:.3f}, train_acc= {:.3f}".format(
-							epoch+1, train_loss, train_acc) 
-						)			
+							epoch+1, train_loss, train_acc)
+						)
 
-			# Add performance to writer 
+			# Add performance to writer
 			self.writer.add_scalar('train_loss', train_loss, epoch)
 			self.writer.add_scalar('train_acc', train_acc, epoch)
 			if self.valid:
@@ -99,7 +99,7 @@ class Trainer():
 	def _train_epoch(self, epoch):
 		""" Training for an epoch """
 
-		# Training mode 
+		# Training mode
 		self.model.train()
 
 		train_loss, train_acc = 0.0, 0.0
@@ -121,7 +121,7 @@ class Trainer():
 			train_loss += loss.item()
 			train_acc += self._compute_accuracy(true_labels, pred_labels)
 
-			# add graph to writer 
+			# add graph to writer
 			if (epoch == self.start_epoch and batch_idx == 0): self.writer.add_graph(self.model, (images,))
 
 		train_loss = train_loss / len(self.train_data_loader)
@@ -152,7 +152,7 @@ class Trainer():
 
 
 	def _to_tensor(self, sample):
-		""" 
+		"""
 		Convert batch of images to FloatTensor and labels to LongTensor
 		and move them to GPU if CUDA is available
 		"""
@@ -168,7 +168,7 @@ class Trainer():
 		""" Compute accuracy between true and predicted labels """
 		accuracy = torch.sum(torch.argmax(true_labels, dim=1) == torch.argmax(pred_labels, dim=1))
 		# mean across the batches
-		accuracy = accuracy.numpy() / self.config["data_loader"]["batch_size"] 
+		accuracy = accuracy.cpu().numpy() / self.config["data_loader"]["batch_size"]
 		return accuracy
 
 
@@ -196,7 +196,7 @@ class Trainer():
 	def save_model_params(self):
 		""" Save model parameters after training """
 
-		save_path = os.path.join(self.config["trainer"]["save_dir"], 
+		save_path = os.path.join(self.config["trainer"]["save_dir"],
 			self.config["experiment_name"])
 		if not os.path.exists(save_path):
 			os.makedirs(save_path)

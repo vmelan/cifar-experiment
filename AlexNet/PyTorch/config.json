@@ -1,13 +1,13 @@
 {
 	"experiment_name": "LeNet_exp",
-	"cuda": false,
+	"cuda": true,
 	"gpu": 0,
 
 	"data_loader": {
-		"data_path": "../../cifar-10-batches-py/", 
-		"batch_size": 128,
+		"data_path": "../../cifar-10-batches-py/",
+		"batch_size": 64,
 		"shuffle": true
-	}, 
+	},
 
 	"validation": {
 		"split": false,
@@ -15,7 +15,7 @@
 	},
 
 	"optimizer": {
-		"optimizer_type": "Adam", 
+		"optimizer_type": "Adam",
 		"optimizer_params": {
 			"lr": 0.01,
 			"weight_decay": 0
@@ -32,10 +32,10 @@
 	},
 
 	"trainer": {
-		"epochs": 30, 
+		"epochs": 30,
 		"save_dir": "./saved/",
 		"save_trained_name": "model_trained.pth",
-		"save_freq": 1, 
+		"save_freq": 1,
 		"verbose": 1
 	}
 }
