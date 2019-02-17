@@ -1,7 +1,7 @@
 {
 	"experiment_name": "AlexNet_exp",
 	"load_model": "./saved/AlexNet_exp/model_trained_full.hdf5" ,
-	"cuda": false,
+	"cuda": true,
 	"gpu": 0,
 
 	"data_loader": {

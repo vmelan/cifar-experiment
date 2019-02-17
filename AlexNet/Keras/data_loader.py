@@ -14,10 +14,6 @@ class DataLoader():
 		self.shuffle()
 		# Scale inputs
 		self.X_train, self.X_test = self.scale_data(self.X_train), self.scale_data(self.X_test)
-		# Resize images
-		# self.X_train, self.X_test = self.resize(self.X_train), self.resize(self.X_test)
-		# # Convert inputs to grayscale
-		# self.X_train, self.X_test = self.convert_grayscale(self.X_train), self.convert_grayscale(self.X_test)
 		# One-hot encode the labels
 		self.y_train, self.y_test = self.one_hot_labels(self.y_train), self.one_hot_labels(self.y_test)
 		# Split train into train/validation
@@ -64,15 +60,6 @@ class DataLoader():
 
 		data = data.astype(np.float32) / 255.0
 		return data
-
-	# def resize(self, data):
-	# 	"""
-	# 	Resize the images to size (227, 227)
-	# 	"""
-	# 	output = np.zeros((data.shape[0], 227, 227, data.shape[-1]))
-	# 	for i, image in enumerate(data):
-	# 		output[i] = cv2.resize(image, (227, 227))
-	# 	return output
 
 	def convert_grayscale(self, data_image):
 		"""

@@ -55,23 +55,14 @@ class Trainer(object):
 	def train(self):
 		""" Train the model """
 
-		if self.validation_data is not None:
-			self.model.fit_generator(
-				generator=self.data.next_batch(),
-				validation_data=self.validation_data,
-				epochs=self.config["trainer"]["epochs"],
-				steps_per_epoch=self.config["trainer"]["num_iter_per_epoch"],
-				callbacks=self.callbacks,
-				verbose=self.config["trainer"]["verbose"]
-				)
-		else:
-			self.model.fit_generator(
-				generator=self.data.next_batch(),
-				epochs=self.config["trainer"]["epochs"],
-				steps_per_epoch=self.config["trainer"]["num_iter_per_epoch"],
-				callbacks=self.callbacks,
-				verbose=self.config["trainer"]["verbose"]
-				)
+		self.model.fit_generator(
+			generator=self.data.next_batch(),
+			validation_data=self.validation_data,
+			epochs=self.config["trainer"]["epochs"],
+			steps_per_epoch=self.config["trainer"]["num_iter_per_epoch"],
+			callbacks=self.callbacks,
+			verbose=self.config["trainer"]["verbose"]
+			)
 
 		self.logger.info("Training complete")
 

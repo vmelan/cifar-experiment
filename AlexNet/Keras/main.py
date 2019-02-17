@@ -6,8 +6,9 @@ from trainer import Trainer
 
 import pdb
 import os
-# os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
-# os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+## GPU
+os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
 def main():
 	with open("config.json", "r") as f:
